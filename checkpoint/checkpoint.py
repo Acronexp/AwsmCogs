@@ -109,7 +109,7 @@ class Checkpoint(commands.Cog):
                     for game in playing:
                         if game.name.lower() not in [all_games[g]["name"].lower() for g in all_games]:
                             key = await self.create_gamekey()
-                            all_games[key] = {"name": game.name,
+                            all_games[key] = {"name": game.name.strip(),
                                               "uses": 1,
                                               "exclude": False}
                         else:
@@ -184,7 +184,7 @@ class Checkpoint(commands.Cog):
                     if m.id in all_users:
                         if key in all_users[m.id]["games"]:
                             players.append(m)
-                txt = "**Détections** - {}\n" \
+                txt = "**Nb. de détections** - {}\n" \
                       "**Estimation du nb. de joueurs ici** - {}".format(game["uses"], len(players))
                 em = discord.Embed(title=f"__**Checkpoint**__ · *{gamename}*", description=txt,
                                    color=em_color)
@@ -194,53 +194,53 @@ class Checkpoint(commands.Cog):
             else:
                 await ctx.send("**Inconnu** • Ce jeu n'est pas encore reconnu par Checkpoint")
         else:
-            options_txt = "📃 · Recevoir une liste des jeux reconnus (MP)\n" \
-                          "❌ · Annuler"
-            em = discord.Embed(title=f"Voulez-vous recevoir la liste complète des jeux reconnus par **Checkpoint** ?",
-                               description=options_txt, color=em_color)
-            em.set_footer(text="⚠️Le bot doit pouvoir vous envoyer un MP")
-            msg = await ctx.send(embed=em)
-            emojis = ["📃", "❌"]
+            if not isinstance(ctx.channel, discord.DMChannel):
+                options_txt = "📃 · Recevoir une liste des jeux reconnus (MP)\n" \
+                              "❌ · Annuler"
+                em = discord.Embed(title=f"Voulez-vous recevoir la liste complète des jeux reconnus par **Checkpoint** ?",
+                                   description=options_txt, color=em_color)
+                em.set_footer(text="⚠️Le bot doit pouvoir vous envoyer un MP")
+                msg = await ctx.send(embed=em)
+                emojis = ["📃", "❌"]
 
-            start_adding_reactions(msg, emojis)
-            try:
-                react, user = await self.bot.wait_for("reaction_add",
-                                                      check=lambda r, u: u == ctx.author and r.message.id == msg.id,
-                                                      timeout=20)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                return
-            else:
-                emoji = react.emoji
-
-            if emoji == "📃":
-                await msg.delete()
-                date = datetime.now().strftime("%d/%m/%Y")
-                txt = f"Liste à jour du {date}\n\n"
-                page = 1
+                start_adding_reactions(msg, emojis)
                 try:
-                    for g in games:
-                        gamename = games[g]["name"]
-                        chunk = f"**{g}** · *{gamename}*\n"
-                        if len(txt) + len(chunk) <= 2000:
-                            txt += chunk
-                        else:
-                            em = discord.Embed(title=f"__**Checkpoint**__ · Jeux reconnus", description=txt,
-                                               color=em_color)
-                            em.set_footer(text=f"Page #{page}")
-                            await ctx.author.send(embed=em)
-                            txt = chunk
-                            page += 1
-                    if txt:
+                    react, user = await self.bot.wait_for("reaction_add",
+                                                          check=lambda r, u: u == ctx.author and r.message.id == msg.id,
+                                                          timeout=20)
+                except asyncio.TimeoutError:
+                    await msg.delete()
+                    return
+                else:
+                    emoji = react.emoji
+
+                if emoji != "📃":
+                    await msg.delete()
+                    return
+
+            date = datetime.now().strftime("%d/%m/%Y")
+            txt = f"Liste à jour du {date}\n\n"
+            page = 1
+            try:
+                for g in games:
+                    gamename = games[g]["name"].strip()
+                    chunk = f"**{g}** · *{gamename}*\n"
+                    if len(txt) + len(chunk) <= 2000:
+                        txt += chunk
+                    else:
                         em = discord.Embed(title=f"__**Checkpoint**__ · Jeux reconnus", description=txt,
                                            color=em_color)
                         em.set_footer(text=f"Page #{page}")
                         await ctx.author.send(embed=em)
-                except:
-                    await ctx.send("**Erreur** • Je n'ai pas accès à vos MP")
-            else:
-                await msg.delete()
-                return
+                        txt = chunk
+                        page += 1
+                if txt:
+                    em = discord.Embed(title=f"__**Checkpoint**__ · Jeux reconnus", description=txt,
+                                       color=em_color)
+                    em.set_footer(text=f"Page #{page} · La liste peut aussi contenir des logiciels")
+                    await ctx.author.send(embed=em)
+            except:
+                await ctx.send("**Erreur** • Je n'ai pas accès à vos MP")
 
 
     @commands.group(name="checkpointset", aliases=["cpset"])
@@ -274,4 +274,16 @@ class Checkpoint(commands.Cog):
             await ctx.send(f"**Modifié** • La sensibilité est désormais à {sens}")
         else:
             await ctx.send(f"**Invalide** • La sensibilité doit être supérieure à 1")
+
+    @_checkpoint_params.command()
+    async def deldetect(self, ctx, key: str):
+        """Supprime les données d'un jeu"""
+        games = await self.config.Games()
+        key = key.upper()
+        if key in games:
+            del games[key]
+            await self.config.Games.set(games)
+            await ctx.send(f"**Succès** • Les données du jeu ont été supprimées")
+        else:
+            await ctx.send(f"**Invalide** • Cet ID est introuvable")
 
