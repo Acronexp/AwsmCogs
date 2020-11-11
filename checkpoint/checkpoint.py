@@ -52,16 +52,25 @@ class Checkpoint(commands.Cog):
                 valid[g] = games[g]
         return valid
 
-    async def get_gamekey(self, ctx, search: str):
+    async def user_verified_games(self, user: discord.Member):
+        games = await self.config.user(user).games()
+        all_games = await self.config.Games()
+        verif = []
+        for g in games:
+            if all_games[g]["uses"] > await self.config.Sensib() and not all_games[g].get("exclude", False):
+                verif.append(g)
+        return verif
+
+    async def get_gamekey(self, ctx, search: str, *, cutoff: int = 70, database: str = "verified"):
         """Recherche automatiquement la clef du jeu"""
         em_color = await ctx.embed_color()
-        games = await self.verified_games()
+        games = await self.verified_games() if database == "verified" else await self.config.Games()
         async with ctx.channel.typing():
             if len(search) == 6:
                 if search in games:
                     return search
             gamenames = (games[game]["name"].lower() for game in games)
-            result = process.extractBests(search.lower(), gamenames, score_cutoff=50)
+            result = process.extractBests(search.lower(), gamenames, score_cutoff=cutoff)
             if result:
                 if result[0][1] == 100:
                     gamename = result[0][0]
@@ -76,8 +85,10 @@ class Checkpoint(commands.Cog):
                     em = discord.Embed(description="```" + tabulate(
                         table, headers=["ID", "Nom", "Score"]) + "```",
                                        color=em_color)
-                    em.set_author(name=f"Recherche Checkpoint · \"{search}\"",
-                                  icon_url=ctx.author.avatar_url)
+                    title = f"Recherche Checkpoint · \"{search}\""
+                    if database != "verified":
+                        title = f"Recherche avancée Checkpoint · \"{search}\""
+                    em.set_author(name=title, icon_url=ctx.author.avatar_url)
                     em.set_footer(text="» Entrez l'ID du jeu ou 'aucun' s'il n'y figure pas")
                     msg = await ctx.send(embed=em)
 
@@ -97,6 +108,98 @@ class Checkpoint(commands.Cog):
                         await msg.delete()
             return None
 
+    async def new_game(self, ctx, search: str):
+        """Cherche le jeu à ajouter, sinon en crée un nouveau"""
+        em_color = await ctx.embed_color()
+        user = ctx.author
+        games = await self.config.Games()
+        key = await self.get_gamekey(ctx, search)
+        if key:
+            usergames = await self.config.user(user).games()
+            if key not in usergames:
+                usergames.append(key)
+                games[key]["uses"] += 1
+                await self.config.user(user).games.set(usergames)
+                await self.config.Games.set(games)
+                await ctx.send("**Jeu ajouté à votre bibliothèque** • Consultez-la avec `;cp list`")
+            else:
+                await ctx.send("**Jeu déjà présent dans votre bibliothèque** • Consultez-la avec `;cp list`")
+        else:
+            em = discord.Embed(description="**Je n'ai pas trouvé ce jeu dans ceux qui ont été vérifiés**, nous allons donc ajouter votre jeu pour qu'il soit reconnu par Checkpoint. D'abord, choisissez une méthode d'ajout :\n"
+                                           "- `detect` : faire détecter le jeu par Checkpoint (PC uniquement)\n"
+                                           "- `manuel` : entrer manuellement le nom du jeu (toutes plateformes)", color=em_color)
+            em.set_author(name=f"Checkpoint · Proposer un nouveau jeu",
+                          icon_url=ctx.author.avatar_url)
+            em.set_footer(text="» Entrez le nom de la méthode que vous voulez utiliser")
+            msg = await ctx.send(embed=em)
+
+            def check(msg: discord.Message):
+                return msg.author == ctx.author
+
+            try:
+                resp = await self.bot.wait_for("message", check=check, timeout=30)
+            except asyncio.TimeoutError:
+                await msg.delete()
+                return
+
+            if resp.content.lower() == "detect":
+                await msg.delete()
+                return await ctx.send("**Aucune action à réaliser** • Vous n'avez qu'à lancer le jeu sur votre PC en laissant "
+                               "Discord affiche votre jeu et il sera automatiquement reconnu.\n"
+                               "Sachez que si votre jeu n'a jamais été détecté auparavant, il n'apparaîtra pas dans "
+                               "votre bibliothèque puisque Checkpoint a besoin de vérifier que plusieurs joueurs le possède pour le considérer comme un jeu vérifié")
+
+            elif resp.content.lower() in ["manuel", "manual"]:
+                await msg.delete()
+                keybis = await self.get_gamekey(ctx, search, database="all")
+                if keybis:
+                    usergames = await self.config.user(user).games()
+                    if key not in usergames:
+                        usergames.append(key)
+                        games[key]["uses"] += 1
+                        await self.config.user(user).games.set(usergames)
+                        await self.config.Games.set(games)
+                        await ctx.send("**Jeu ajouté à votre bibliothèque** • Consultez-la avec `;cp list`")
+                    else:
+                        await ctx.send("**Jeu déjà présent dans votre bibliothèque** • Consultez-la avec `;cp list`")
+                else:
+                    em = discord.Embed(
+                        description="Entrez le nom du jeu **en entier** que vous voulez ajouter.\nVérifiez son nom complet et officiel sur internet (wikipedia, metacritics etc.).", color=em_color)
+                    em.set_author(name=f"Checkpoint · Proposer un nouveau jeu",
+                                  icon_url=ctx.author.avatar_url)
+                    em.set_footer(text="» Entrez le nom complet du jeu à ajouter")
+                    msg = await ctx.send(embed=em)
+
+                    def check(msg: discord.Message):
+                        return msg.author == ctx.author
+
+                    try:
+                        resp = await self.bot.wait_for("message", check=check, timeout=30)
+                    except asyncio.TimeoutError:
+                        await msg.delete()
+                        return
+
+                    searchbis = resp.content
+                    await msg.delete()
+                    usergames = await self.config.user(user).games()
+                    if searchbis.strip().lower() not in [games[g]["name"].lower() for g in games]:
+                        key = await self.create_gamekey()
+                        games[key] = {"name": searchbis.strip(),
+                                      "uses": 1,
+                                      "exclude": False}
+                        usergames.append(key)
+                        await ctx.send("**Jeu ajouté à Checkpoint** • Il ne figurera pas dans votre bibliothèque tant qu'au moins un autre membre ne possèdera pas le même jeu")
+                    else:
+                        key = [g for g in games if games[g]["name"].lower() == searchbis.lower()][0]
+                        if key not in usergames:
+                            usergames.append(key)
+                            games[key]["uses"] += 1
+                            await ctx.send("**Jeu ajouté à votre bibliothèque** • Consultez-la avec `;cp list`")
+                    await self.config.user(user).games.set(usergames)
+                    await self.config.Games.set(games)
+            else:
+                await msg.delete()
+                return await ctx.send("**Action annulée**")
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -221,13 +324,13 @@ class Checkpoint(commands.Cog):
                 else:
                     await msg.delete()
 
-            date = datetime.now().strftime("%d/%m/%Y")
+            date = datetime.now().strftime("%d/%m/%Y %Hh%M")
             txt = f"Liste à jour du {date}\n\n"
             page = 1
             all_games = []
             for g in games:
-                all_games.append((g, games[g]["name"].strip()))
-            all_games = sorted(all_games, key=operator.itemgetter(1))
+                all_games.append((g, games[g]["name"].strip(), games[g]["name"].strip().lower()))
+            all_games = sorted(all_games, key=operator.itemgetter(2))
             try:
                 for g in all_games:
                     chunk = f"**{g[0]}** · *{g[1]}*\n"
@@ -248,6 +351,62 @@ class Checkpoint(commands.Cog):
             except:
                 await ctx.send("**Erreur** • Je n'ai pas accès à vos MP")
 
+
+    @commands.group(name="checkpoint", aliases=["cp"])
+    async def _checkpoint_profile(self, ctx):
+        """Paramètres personnalisés Checkpoint"""
+
+    @_checkpoint_profile.command()
+    async def addgame(self, ctx, *game):
+        """Ajouter un jeu de votre collection"""
+        await self.new_game(ctx, " ".join(game))
+
+    @_checkpoint_profile.command()
+    async def delgame(self, ctx, *game):
+        """Retirer un jeu"""
+        games = await self.config.user(ctx.author).games()
+        key = await self.get_gamekey(ctx, " ".join(game), database="all")
+        if key:
+            if key in games:
+                del games[key]
+                await self.config.user(ctx.author).games.set(games)
+                await ctx.send("**Jeu retiré** • Il ne figurera plus dans votre collection")
+            else:
+                await ctx.send("**Non possédé** • Ce jeu ne figure pas dans votre collection")
+        else:
+            await ctx.send("**Inconnu** • Ce jeu n'existe pas dans la base de données Checkpoint")
+
+    @_checkpoint_profile.command()
+    async def list(self, ctx, user: discord.Member = None):
+        """Liste les jeux possédés"""
+        user = user if user else ctx.author
+        jeux = await self.user_verified_games(user)
+        if jeux:
+            games = await self.config.Games()
+            all_games = []
+            for j in jeux:
+                all_games.append((j, games[j]["name"].strip(), games[j]["name"].strip().lower()))
+            all_games = sorted(all_games, key=operator.itemgetter(2))
+            txt = ""
+            page = 1
+            for g in all_games:
+                chunk = f"**{g[0]}** · *{g[1]}*\n"
+                if len(txt) + len(chunk) <= 2000:
+                    txt += chunk
+                else:
+                    em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
+                    em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
+                    em.set_footer(text=f"Page #{page}")
+                    await ctx.author.send(embed=em)
+                    txt = chunk
+                    page += 1
+            if txt:
+                em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
+                em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
+                em.set_footer(text=f"Page #{page}")
+                await ctx.author.send(embed=em)
+        else:
+            await ctx.send("**Bibliothèque vide** • Aucun jeu n'a été détecté ou enregistré avec ce compte")
 
     @commands.group(name="checkpointset", aliases=["cpset"])
     @commands.is_owner()
