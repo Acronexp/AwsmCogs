@@ -51,7 +51,7 @@ class Checkpoint(commands.Cog):
             if len(search) == 6:
                 if search in games:
                     return search
-            gamenames = (game["name"].lower() for game in games)
+            gamenames = ([games][game]["name"].lower() for game in games)
             result = process.extractBests(search.lower(), gamenames, score_cutoff=50)
             if result:
                 if result[0][1] == 100:
