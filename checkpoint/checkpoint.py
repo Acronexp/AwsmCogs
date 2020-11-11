@@ -303,7 +303,7 @@ class Checkpoint(commands.Cog):
                     page = 1
                     for p in players:
                         name = str(p)
-                        chunk = f"*{name}\n*"
+                        chunk = f"*{name}*\n"
                         if len(txt) + len(chunk) <= 2000:
                             txt += chunk
                         else:
