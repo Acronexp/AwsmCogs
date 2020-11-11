@@ -217,6 +217,8 @@ class Checkpoint(commands.Cog):
                 if emoji != "📃":
                     await msg.delete()
                     return
+                else:
+                    await msg.delete()
 
             date = datetime.now().strftime("%d/%m/%Y")
             txt = f"Liste à jour du {date}\n\n"
