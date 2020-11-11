@@ -46,7 +46,7 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         valid = {}
         for g in games:
-            if games[g]["uses"] > 1 and not games[g].get("exclude", False):
+            if games[g]["uses"] > 2 and not games[g].get("exclude", False):
                 valid[g] = games[g]
         return valid
 
@@ -55,7 +55,6 @@ class Checkpoint(commands.Cog):
         em_color = await ctx.embed_color()
         games = await self.verified_games()
         async with ctx.channel.typing():
-            key = None
             if len(search) == 6:
                 if search in games:
                     return search
@@ -131,8 +130,9 @@ class Checkpoint(commands.Cog):
         em_color = await ctx.embed_color()
         if game:
             key = await self.get_gamekey(ctx, " ".join(game))
+            games = await self.verified_games()
             if key:
-                game = await self.verified_games()[key]
+                game = games[key]
                 gamename = game["name"]
                 players = []
                 all_users = await self.config.all_users()
@@ -170,10 +170,11 @@ class Checkpoint(commands.Cog):
     async def cp_games(self, ctx, *game):
         """Recherche parmi les jeux reconnus par Checkpoint"""
         em_color = await ctx.embed_color()
+        games = await self.verified_games()
         if game:
             key = await self.get_gamekey(ctx, " ".join(game))
             if key:
-                game = await self.verified_games()[key]
+                game = games[key]
                 gamename = game["name"]
                 players = []
                 all_users = await self.config.all_users()
@@ -212,7 +213,6 @@ class Checkpoint(commands.Cog):
 
             if emoji == "📃":
                 await msg.delete()
-                games = await self.verified_games()
                 date = datetime.now().strftime("%d/%m/%Y")
                 txt = f"Liste à jour du {date}\n\n"
                 page = 1
