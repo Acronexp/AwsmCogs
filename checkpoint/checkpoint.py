@@ -278,7 +278,7 @@ class Checkpoint(commands.Cog):
             else:
                 return await ctx.send("**Jeu introuvable** • Personne ne semble jouer à votre jeu, sinon vérifiez l'orthographe")
         players = [p for p in games[gamename]]
-        players = await self.get_pertinence(players)
+        players = [i[0] for i in await self.get_pertinence(players)]
         txt = ""
         page = 1
         em_color = await ctx.embed_color()
@@ -323,7 +323,7 @@ class Checkpoint(commands.Cog):
                             if key in all_users[m.id]["games"]:
                                 players.append(m)
                 if players:
-                    players = await self.get_pertinence(players)
+                    players = [i[0] for i in await self.get_pertinence(players)]
                     txt = f"Utilisez `;playing {key}` pour voir les membres qui y jouent actuellement\n\n"
                     page = 1
                     for p in players:
