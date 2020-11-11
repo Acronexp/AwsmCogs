@@ -40,7 +40,7 @@ class Checkpoint(commands.Cog):
     async def get_game_named(self, name: str):
         games = await self.verified_games()
         for g in games:
-            if games[g]["name"].lower() == name.lower():
+            if games[g]["name"].strip().lower() == name.strip().lower():
                 return g
         return None
 
@@ -368,7 +368,7 @@ class Checkpoint(commands.Cog):
         key = await self.get_gamekey(ctx, " ".join(game), database="all")
         if key:
             if key in games:
-                del games[key]
+                games.remove(key)
                 await self.config.user(ctx.author).games.set(games)
                 await ctx.send("**Jeu retiré** • Il ne figurera plus dans votre collection")
             else:
