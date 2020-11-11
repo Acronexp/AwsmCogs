@@ -144,7 +144,8 @@ class Checkpoint(commands.Cog):
                     txt = ""
                     page = 1
                     for p in players:
-                        chunk = f"{p.mention}\n"
+                        name = str(p)
+                        chunk = f"{name}\n"
                         if len(txt) + len(chunk) <= 2000:
                             txt += chunk
                         else:
