@@ -37,8 +37,8 @@ class Checkpoint(commands.Cog):
             key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         return key
 
-    async def get_game_named(self, name: str):
-        games = await self.verified_games()
+    async def get_game_named(self, name: str, database: str = "verified"):
+        games = await self.verified_games() if database == "verified" else await self.config.Games()
         for g in games:
             if games[g]["name"].strip().lower() == name.strip().lower():
                 return g
@@ -74,11 +74,11 @@ class Checkpoint(commands.Cog):
             if result:
                 if result[0][1] == 100:
                     gamename = result[0][0]
-                    return await self.get_game_named(gamename)
+                    return await self.get_game_named(gamename, database)
                 else:
                     table = []
                     for g in result:
-                        key = await self.get_game_named(g[0])
+                        key = await self.get_game_named(g[0], database)
                         realname = games[key]["name"]
                         score = f"{g[1]}%"
                         table.append([key, realname, score])
