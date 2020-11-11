@@ -46,7 +46,7 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         valid = {}
         for g in games:
-            if games[g]["uses"] > 2 and not games[g].get("exclude", False):
+            if games[g]["uses"] > 1 and not games[g].get("exclude", False):
                 valid[g] = games[g]
         return valid
 
