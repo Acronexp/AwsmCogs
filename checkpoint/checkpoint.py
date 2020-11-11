@@ -260,14 +260,14 @@ class Checkpoint(commands.Cog):
                         else:
                             em = discord.Embed(title=f"__**Checkpoint**__ · Joueurs de \"{gamename}\"", description=txt,
                                                color=em_color)
-                            em.set_footer(text=f"Page #{page}")
+                            em.set_footer(text=f"Page #{page} • Sur ce serveur")
                             await ctx.send(embed=em)
                             txt = chunk
                             page += 1
                     if txt:
                         em = discord.Embed(title=f"__**Checkpoint**__ · Joueurs de \"{gamename}\"", description=txt,
                                            color=em_color)
-                        em.set_footer(text=f"Page #{page}")
+                        em.set_footer(text=f"Page #{page} • Sur ce serveur")
                         await ctx.send(embed=em)
                 else:
                     await ctx.send("**Aucun joueur** • Personne sur ce serveur ne joue à ce jeu")
