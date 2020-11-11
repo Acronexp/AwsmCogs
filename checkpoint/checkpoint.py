@@ -154,9 +154,9 @@ class Checkpoint(commands.Cog):
                 keybis = await self.get_gamekey(ctx, search, database="all")
                 if keybis:
                     usergames = await self.config.user(user).games()
-                    if key not in usergames:
-                        usergames.append(key)
-                        games[key]["uses"] += 1
+                    if keybis not in usergames:
+                        usergames.append(keybis)
+                        games[keybis]["uses"] += 1
                         await self.config.user(user).games.set(usergames)
                         await self.config.Games.set(games)
                         await ctx.send("**Jeu ajouté à votre bibliothèque** • Consultez-la avec `;cp list`")
