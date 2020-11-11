@@ -229,6 +229,52 @@ class Checkpoint(commands.Cog):
                                     await self.config.user(after).games.set(usergames)
                             await self.config.Games.set(all_games)
 
+    @commands.command(name="playing")
+    @commands.guild_only()
+    async def cp_playing_now(self, ctx, *game):
+        """Recherche les membres jouant actuellement au jeu"""
+        guild = ctx.guild
+        games = {}
+        for m in guild.members:
+            if m.activities:
+                playing = [c for c in m.activities if c.type == discord.ActivityType.playing]
+                if playing:
+                    for game in playing:
+                        name = game.name.strip()
+                        if name not in games:
+                            games[name] = [m]
+                        else:
+                            games[name].append(m)
+        game = " ".join(game)
+        game = game.strip()
+        if game not in list(games.keys()):
+            result = process.extractOne(game, list(games.keys()), score_cutoff=90)
+            if result:
+                game = result[0]
+            else:
+                return await ctx.send("**Jeu introuvable** • Personne ne semble jouer à votre jeu, sinon vérifiez l'orthographe")
+        players = [p for p in games[game]]
+        txt = ""
+        page = 1
+        em_color = await ctx.embed_color()
+        for p in players:
+            name = str(p)
+            chunk = f"{name}\n"
+            if len(txt) + len(chunk) <= 2000:
+                txt += chunk
+            else:
+                em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{game}\"", description=txt,
+                                   color=em_color)
+                em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+                await ctx.send(embed=em)
+                txt = chunk
+                page += 1
+        if txt:
+            em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{game}\"", description=txt,
+                               color=em_color)
+            em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+            await ctx.send(embed=em)
+
 
     @commands.command(name="players")
     @commands.guild_only()
@@ -250,7 +296,7 @@ class Checkpoint(commands.Cog):
                         if key in all_users[m.id]["games"]:
                             players.append(m)
                 if players:
-                    txt = ""
+                    txt = f"Utilisez `;playing {key}` pour voir les jeux qui y jouent actuellement"
                     page = 1
                     for p in players:
                         name = str(p)
@@ -258,16 +304,16 @@ class Checkpoint(commands.Cog):
                         if len(txt) + len(chunk) <= 2000:
                             txt += chunk
                         else:
-                            em = discord.Embed(title=f"__**Checkpoint**__ · Joueurs de \"{gamename}\"", description=txt,
+                            em = discord.Embed(title=f"__**Checkpoint**__ · Membres possédant \"{gamename}\"", description=txt,
                                                color=em_color)
-                            em.set_footer(text=f"Page #{page} • Sur ce serveur")
+                            em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
                             await ctx.send(embed=em)
                             txt = chunk
                             page += 1
                     if txt:
-                        em = discord.Embed(title=f"__**Checkpoint**__ · Joueurs de \"{gamename}\"", description=txt,
+                        em = discord.Embed(title=f"__**Checkpoint**__ · Membres possédant \"{gamename}\"", description=txt,
                                            color=em_color)
-                        em.set_footer(text=f"Page #{page} • Sur ce serveur")
+                        em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
                         await ctx.send(embed=em)
                 else:
                     await ctx.send("**Aucun joueur** • Personne sur ce serveur ne joue à ce jeu")
