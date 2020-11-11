@@ -7,6 +7,7 @@ import discord
 import random
 import string
 from datetime import datetime
+from typing import List
 
 from fuzzywuzzy import process
 from redbot.core import Config, checks, commands
@@ -31,6 +32,12 @@ class Checkpoint(commands.Cog):
         self.config.register_guild(**default_guild)
         self.config.register_user(**default_user)
         self.config.register_global(**default_global)
+
+        try:
+            self.social = self.bot.get_cog("Social")
+        except:
+            self.social = None
+            logger.info("Impossible de charger Social.py, la pertinence ne pourra être optimisée")
 
     async def create_gamekey(self):
         key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
@@ -62,6 +69,19 @@ class Checkpoint(commands.Cog):
             if all_games[g]["uses"] >= await self.config.Sensib() and not all_games[g].get("exclude", False):
                 verif.append(g)
         return verif
+
+    async def get_pertinence(self, members: List[discord.Member]):
+        output = []
+        if self.social:
+            soc = await self.social.config.all_members(members[0].guild)
+            for m in members:
+                if m.id in soc:
+                    output.append((m, len(soc[m.id]["cons_days"])))
+                else:
+                    output.append((m, 0))
+            output = sorted(output, key=operator.itemgetter(1), reverse=True)
+            return output
+        return [(m, 0) for m in members]
 
     async def get_gamekey(self, ctx, search: str, *, cutoff: int = 70, database: str = "verified"):
         """Recherche automatiquement la clef du jeu"""
@@ -233,7 +253,9 @@ class Checkpoint(commands.Cog):
     @commands.command(name="playing")
     @commands.guild_only()
     async def cp_playing_now(self, ctx, *gamename):
-        """Recherche les membres jouant actuellement au jeu"""
+        """Recherche les membres jouant actuellement au jeu
+
+        Les membres sont triés par pertinence"""
         guild = ctx.guild
         games = {}
         for m in guild.members:
@@ -256,6 +278,7 @@ class Checkpoint(commands.Cog):
             else:
                 return await ctx.send("**Jeu introuvable** • Personne ne semble jouer à votre jeu, sinon vérifiez l'orthographe")
         players = [p for p in games[gamename]]
+        players = await self.get_pertinence(players)
         txt = ""
         page = 1
         em_color = await ctx.embed_color()
@@ -283,7 +306,8 @@ class Checkpoint(commands.Cog):
     async def cp_players(self, ctx, *game):
         """Recherche des membres du serveur possédant le jeu demandé
 
-        Il est possible de rentrer directement l'ID du jeu s'il est connu, sinon la commande lancera une recherche par titre"""
+        Il est possible de rentrer directement l'ID du jeu s'il est connu, sinon la commande lancera une recherche par titre
+        Les membres sont triés par pertinence"""
         em_color = await ctx.embed_color()
         if game:
             key = await self.get_gamekey(ctx, " ".join(game))
@@ -299,6 +323,7 @@ class Checkpoint(commands.Cog):
                             if key in all_users[m.id]["games"]:
                                 players.append(m)
                 if players:
+                    players = await self.get_pertinence(players)
                     txt = f"Utilisez `;playing {key}` pour voir les membres qui y jouent actuellement\n\n"
                     page = 1
                     for p in players:
