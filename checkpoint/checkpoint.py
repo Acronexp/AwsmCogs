@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import operator
 
 import discord
 import random
@@ -223,10 +224,13 @@ class Checkpoint(commands.Cog):
             date = datetime.now().strftime("%d/%m/%Y")
             txt = f"Liste à jour du {date}\n\n"
             page = 1
+            all_games = []
+            for g in games:
+                all_games.append((g, games[g]["name"].strip()))
+            all_games = sorted(all_games, key=operator.itemgetter(1))
             try:
-                for g in games:
-                    gamename = games[g]["name"].strip()
-                    chunk = f"**{g}** · *{gamename}*\n"
+                for g in all_games:
+                    chunk = f"**{g[0]}** · *{g[1]}*\n"
                     if len(txt) + len(chunk) <= 2000:
                         txt += chunk
                     else:
