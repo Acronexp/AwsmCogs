@@ -269,7 +269,6 @@ class Checkpoint(commands.Cog):
         """Change la sensibilité qui délimite les vrais jeux des faux
 
         Plus la valeur est haute plus il faut avoir détecté le jeu pour qu'il soit considéré comme vrai"""
-        sens = await self.config.Sensib()
         if sens > 1:
             await self.config.Sensib.set(sens)
             await ctx.send(f"**Modifié** • La sensibilité est désormais à {sens}")
