@@ -231,7 +231,7 @@ class Checkpoint(commands.Cog):
 
     @commands.command(name="playing")
     @commands.guild_only()
-    async def cp_playing_now(self, ctx, *game):
+    async def cp_playing_now(self, ctx, *gamename):
         """Recherche les membres jouant actuellement au jeu"""
         guild = ctx.guild
         games = {}
@@ -245,15 +245,15 @@ class Checkpoint(commands.Cog):
                             games[name] = [m]
                         else:
                             games[name].append(m)
-        game = " ".join(game)
-        game = game.strip()
-        if game not in list(games.keys()):
-            result = process.extractOne(game, list(games.keys()), score_cutoff=90)
+        gamename = " ".join(gamename)
+        gamename = gamename.strip()
+        if gamename not in list(games.keys()):
+            result = process.extractOne(gamename, list(games.keys()), score_cutoff=90)
             if result:
-                game = result[0]
+                gamename = result[0]
             else:
                 return await ctx.send("**Jeu introuvable** • Personne ne semble jouer à votre jeu, sinon vérifiez l'orthographe")
-        players = [p for p in games[game]]
+        players = [p for p in games[gamename]]
         txt = ""
         page = 1
         em_color = await ctx.embed_color()
@@ -263,14 +263,14 @@ class Checkpoint(commands.Cog):
             if len(txt) + len(chunk) <= 2000:
                 txt += chunk
             else:
-                em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{game}\"", description=txt,
+                em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{gamename}\"", description=txt,
                                    color=em_color)
                 em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
                 await ctx.send(embed=em)
                 txt = chunk
                 page += 1
         if txt:
-            em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{game}\"", description=txt,
+            em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{gamename}\"", description=txt,
                                color=em_color)
             em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
             await ctx.send(embed=em)
