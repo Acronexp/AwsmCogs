@@ -74,7 +74,7 @@ class Checkpoint(commands.Cog):
                     em = discord.Embed(description="```" + tabulate(
                         table, headers=["ID", "Nom", "Score"]) + "```",
                                        color=em_color)
-                    em.set_author(name=f"__**Recherche Checkpoint**__ · \"{search}\"",
+                    em.set_author(name=f"Recherche Checkpoint · \"{search}\"",
                                   icon_url=ctx.author.avatar_url)
                     em.set_footer(text="» Entrez l'ID du jeu ou 'aucun' s'il n'y figure pas")
                     msg = await ctx.send(embed=em)
