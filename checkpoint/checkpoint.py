@@ -296,7 +296,7 @@ class Checkpoint(commands.Cog):
                         if key in all_users[m.id]["games"]:
                             players.append(m)
                 if players:
-                    txt = f"Utilisez `;playing {key}` pour voir les jeux qui y jouent actuellement"
+                    txt = f"Utilisez `;playing {key}` pour voir les jeux qui y jouent actuellement\n\n"
                     page = 1
                     for p in players:
                         name = str(p)
