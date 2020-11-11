@@ -397,14 +397,14 @@ class Checkpoint(commands.Cog):
                     em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
                     em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
                     em.set_footer(text=f"Page #{page}")
-                    await ctx.author.send(embed=em)
+                    await ctx.send(embed=em)
                     txt = chunk
                     page += 1
             if txt:
                 em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
                 em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
                 em.set_footer(text=f"Page #{page}")
-                await ctx.author.send(embed=em)
+                await ctx.send(embed=em)
         else:
             await ctx.send("**Bibliothèque vide** • Aucun jeu n'a été détecté ou enregistré avec ce compte")
 
