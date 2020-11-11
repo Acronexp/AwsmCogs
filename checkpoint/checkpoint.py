@@ -23,7 +23,8 @@ class Checkpoint(commands.Cog):
 
         default_guild = {}
         default_user = {"games": []}
-        default_global = {"Games": {}}
+        default_global = {"Games": {},
+                          "Sensib": 2}
         self.config.register_guild(**default_guild)
         self.config.register_user(**default_user)
         self.config.register_global(**default_global)
@@ -46,7 +47,7 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         valid = {}
         for g in games:
-            if games[g]["uses"] > 2 and not games[g].get("exclude", False):
+            if games[g]["uses"] > await self.config.Sensib() and not games[g].get("exclude", False):
                 valid[g] = games[g]
         return valid
 
@@ -262,4 +263,16 @@ class Checkpoint(commands.Cog):
             return await ctx.send("**Modifié** • Ce jeu est désormais exclu de la liste des jeux vérifiés")
         else:
             await ctx.send("**Erreur** • Identifiant de jeu inconnu")
+
+    @_checkpoint_params.command()
+    async def sensib(self, ctx, sens: int):
+        """Change la sensibilité qui délimite les vrais jeux des faux
+
+        Plus la valeur est haute plus il faut avoir détecté le jeu pour qu'il soit considéré comme vrai"""
+        sens = await self.config.Sensib()
+        if sens > 1:
+            await self.config.Sensib.set(sens)
+            await ctx.send(f"**Modifié** • La sensibilité est désormais à {sens}")
+        else:
+            await ctx.send(f"**Invalide** • La sensibilité doit être supérieure à 1")
 
