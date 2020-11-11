@@ -90,7 +90,7 @@ class Checkpoint(commands.Cog):
 
                     if resp.content.upper() in games:
                         await msg.delete()
-                        return resp.content
+                        return resp.content.upper()
                     else:
                         await msg.delete()
             return None
