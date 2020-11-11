@@ -46,7 +46,7 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         valid = {}
         for g in games:
-            if games[g]["uses"] > 1 and not games[g].get("exclude", False):
+            if games[g]["uses"] > 2 and not games[g].get("exclude", False):
                 valid[g] = games[g]
         return valid
 
@@ -114,10 +114,10 @@ class Checkpoint(commands.Cog):
                                               "exclude": False}
                         else:
                             key = [g for g in all_games if all_games[g]["name"].lower() == game.name.lower()][0]
-                            all_games[key]["uses"] += 1
                             usergames = await self.config.user(after).games()
                             if key not in usergames:
                                 usergames.append(key)
+                                all_games[key]["uses"] += 1
                                 await self.config.user(after).games.set(usergames)
                         await self.config.Games.set(all_games)
 
