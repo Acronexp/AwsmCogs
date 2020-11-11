@@ -24,7 +24,8 @@ class Checkpoint(commands.Cog):
         self.config = Config.get_conf(self, identifier=736144321857978388, force_registration=True)
 
         default_guild = {}
-        default_user = {"games": []}
+        default_user = {"games": [],
+                        "private": False}
         default_global = {"Games": {},
                           "Sensib": 2}
         self.config.register_guild(**default_guild)
@@ -237,14 +238,15 @@ class Checkpoint(commands.Cog):
         games = {}
         for m in guild.members:
             if m.activities:
-                playing = [c for c in m.activities if c.type == discord.ActivityType.playing]
-                if playing:
-                    for game in playing:
-                        name = game.name.strip()
-                        if name not in games:
-                            games[name] = [m]
-                        else:
-                            games[name].append(m)
+                if not await self.config.user(m).private():
+                    playing = [c for c in m.activities if c.type == discord.ActivityType.playing]
+                    if playing:
+                        for game in playing:
+                            name = game.name.strip()
+                            if name not in games:
+                                games[name] = [m]
+                            else:
+                                games[name].append(m)
         gamename = " ".join(gamename)
         gamename = gamename.strip()
         if gamename not in list(games.keys()):
@@ -293,8 +295,9 @@ class Checkpoint(commands.Cog):
                 all_users = await self.config.all_users()
                 for m in ctx.guild.members:
                     if m.id in all_users:
-                        if key in all_users[m.id]["games"]:
-                            players.append(m)
+                        if not all_users[m.id].get("private", False):
+                            if key in all_users[m.id]["games"]:
+                                players.append(m)
                 if players:
                     txt = f"Utilisez `;playing {key}` pour voir les jeux qui y jouent actuellement\n\n"
                     page = 1
@@ -460,6 +463,20 @@ class Checkpoint(commands.Cog):
                 await ctx.send(embed=em)
         else:
             await ctx.send("**Bibliothèque vide** • Aucun jeu n'a été détecté ou enregistré avec ce compte")
+
+    @_checkpoint_profile.command()
+    async def private(self, ctx):
+        """Rendre vos jeux privés, vous effaçant de toutes les commandes liées à Checkpoint sauf `;cp list`
+
+        Cette commande s'applique sur tous les serveurs où vous et le bot se trouvent"""
+        author = ctx.author
+        priv = await self.config.user(author).private()
+        if priv:
+            await ctx.send("**Public** • Votre bibliothèque est désormais publique")
+        else:
+            await ctx.send("**Privé** • Votre bibliothèque est désormais restreinte aux seuls membres cherchant spécifiquement vos jeux")
+        await self.config.user(author).private.set(not priv)
+
 
     @commands.group(name="checkpointset", aliases=["cpset"])
     @commands.is_owner()
