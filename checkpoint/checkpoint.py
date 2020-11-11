@@ -48,7 +48,7 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         valid = {}
         for g in games:
-            if games[g]["uses"] > await self.config.Sensib() and not games[g].get("exclude", False):
+            if games[g]["uses"] >= await self.config.Sensib() and not games[g].get("exclude", False):
                 valid[g] = games[g]
         return valid
 
@@ -57,7 +57,7 @@ class Checkpoint(commands.Cog):
         all_games = await self.config.Games()
         verif = []
         for g in games:
-            if all_games[g]["uses"] > await self.config.Sensib() and not all_games[g].get("exclude", False):
+            if all_games[g]["uses"] >= await self.config.Sensib() and not all_games[g].get("exclude", False):
                 verif.append(g)
         return verif
 
@@ -370,6 +370,9 @@ class Checkpoint(commands.Cog):
             if key in games:
                 games.remove(key)
                 await self.config.user(ctx.author).games.set(games)
+                all_games = await self.config.Games()
+                all_games[key]["uses"] -= 1
+                await self.config.Games.set(all_games)
                 await ctx.send("**Jeu retiré** • Il ne figurera plus dans votre collection")
             else:
                 await ctx.send("**Non possédé** • Ce jeu ne figure pas dans votre collection")
