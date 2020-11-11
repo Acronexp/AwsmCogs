@@ -36,16 +36,24 @@ class Checkpoint(commands.Cog):
         return key
 
     async def get_game_named(self, name: str):
-        games = await self.config.Games()
+        games = await self.verified_games()
         for g in games:
             if games[g]["name"].lower() == name.lower():
                 return g
         return None
 
+    async def verified_games(self):
+        games = await self.config.Games()
+        valid = {}
+        for g in games:
+            if games[g]["uses"] > 1 and not games[g].get("exclude", False):
+                valid[g] = games[g]
+        return valid
+
     async def get_gamekey(self, ctx, search: str):
         """Recherche automatiquement la clef du jeu"""
         em_color = await ctx.embed_color()
-        games = await self.config.Games()
+        games = await self.verified_games()
         async with ctx.channel.typing():
             key = None
             if len(search) == 6:
@@ -88,6 +96,7 @@ class Checkpoint(commands.Cog):
                         await msg.delete()
             return None
 
+
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
         """Met à jour la liste de jeux reconnus + les jeux du membre"""
@@ -101,7 +110,8 @@ class Checkpoint(commands.Cog):
                         if game.name.lower() not in [all_games[g]["name"].lower() for g in all_games]:
                             key = await self.create_gamekey()
                             all_games[key] = {"name": game.name,
-                                              "uses": 1}
+                                              "uses": 1,
+                                              "exclude": False}
                         else:
                             key = [g for g in all_games if all_games[g]["name"].lower() == game.name.lower()][0]
                             all_games[key]["uses"] += 1
@@ -111,7 +121,8 @@ class Checkpoint(commands.Cog):
                                 await self.config.user(after).games.set(usergames)
                         await self.config.Games.set(all_games)
 
-    @commands.group(name="players", aliases=["gs"])
+
+    @commands.command(name="players")
     @commands.guild_only()
     async def cp_players(self, ctx, *game):
         """Recherche des membres du serveur possédant le jeu demandé
@@ -121,7 +132,7 @@ class Checkpoint(commands.Cog):
         if game:
             key = await self.get_gamekey(ctx, " ".join(game))
             if key:
-                game = await self.config.Games()[key]
+                game = await self.verified_games()[key]
                 gamename = game["name"]
                 players = []
                 all_users = await self.config.all_users()
@@ -155,14 +166,14 @@ class Checkpoint(commands.Cog):
         else:
             await ctx.send("**???** • Entrez l'ID du jeu ou des termes à rechercher")
 
-    @commands.group(name="games")
+    @commands.command(name="games")
     async def cp_games(self, ctx, *game):
         """Recherche parmi les jeux reconnus par Checkpoint"""
         em_color = await ctx.embed_color()
         if game:
             key = await self.get_gamekey(ctx, " ".join(game))
             if key:
-                game = await self.config.Games()[key]
+                game = await self.verified_games()[key]
                 gamename = game["name"]
                 players = []
                 all_users = await self.config.all_users()
@@ -201,7 +212,7 @@ class Checkpoint(commands.Cog):
 
             if emoji == "📃":
                 await msg.delete()
-                games = await self.config.Games()
+                games = await self.verified_games()
                 date = datetime.now().strftime("%d/%m/%Y")
                 txt = f"Liste à jour du {date}\n\n"
                 page = 1
@@ -228,3 +239,26 @@ class Checkpoint(commands.Cog):
             else:
                 await msg.delete()
                 return
+
+
+    @commands.group(name="checkpointset", aliases=["cpset"])
+    @commands.is_owner()
+    async def _checkpoint_params(self, ctx):
+        """Paramètres Checkpoint"""
+
+    @_checkpoint_params.command()
+    async def exclude(self, ctx, key: str):
+        """Exclue un jeu de la liste des jeux vérifiés"""
+        games = await self.config.Games()
+        if key in games:
+            if "exclude" in games[key]:
+                if games[key]["exclude"]:
+                    games[key]["exclude"] = False
+                    await self.config.Games.set(games)
+                    return await ctx.send("**Modifié** • Ce jeu ne sera plus exclu")
+            games[key]["exclude"] = True
+            await self.config.Games.set(games)
+            return await ctx.send("**Modifié** • Ce jeu est désormais exclu de la liste des jeux vérifiés")
+        else:
+            await ctx.send("**Erreur** • Identifiant de jeu inconnu")
+
