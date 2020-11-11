@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import operator
+from copy import deepcopy
 
 import discord
 import random
@@ -205,25 +206,28 @@ class Checkpoint(commands.Cog):
     async def on_member_update(self, before, after):
         """Met à jour la liste de jeux reconnus + les jeux du membre"""
         if isinstance(after, discord.Member):
-            activities = after.activities
-            if activities:
-                playing = [c for c in after.activities if c.type == discord.ActivityType.playing]
-                if playing:
-                    all_games = await self.config.Games()
-                    for game in playing:
-                        if game.name.lower() not in [all_games[g]["name"].lower() for g in all_games]:
-                            key = await self.create_gamekey()
-                            all_games[key] = {"name": game.name.strip(),
-                                              "uses": 1,
-                                              "exclude": False}
-                        else:
-                            key = [g for g in all_games if all_games[g]["name"].lower() == game.name.lower()][0]
-                            usergames = await self.config.user(after).games()
-                            if key not in usergames:
-                                usergames.append(key)
-                                all_games[key]["uses"] += 1
-                                await self.config.user(after).games.set(usergames)
-                        await self.config.Games.set(all_games)
+            if not after.bot:
+                activities = after.activities
+                if activities:
+                    playing = [c for c in after.activities if c.type == discord.ActivityType.playing]
+                    if playing:
+                        all_games = await self.config.Games()
+                        for game in playing:
+                            if game.name[0] in ["!", "?"]:
+                                continue
+                            if game.name.lower() not in [all_games[g]["name"].lower() for g in all_games]:
+                                key = await self.create_gamekey()
+                                all_games[key] = {"name": game.name.strip(),
+                                                  "uses": 1,
+                                                  "exclude": False}
+                            else:
+                                key = [g for g in all_games if all_games[g]["name"].lower() == game.name.lower()][0]
+                                usergames = await self.config.user(after).games()
+                                if key not in usergames:
+                                    usergames.append(key)
+                                    all_games[key]["uses"] += 1
+                                    await self.config.user(after).games.set(usergames)
+                            await self.config.Games.set(all_games)
 
 
     @commands.command(name="players")
@@ -455,3 +459,13 @@ class Checkpoint(commands.Cog):
         else:
             await ctx.send(f"**Invalide** • Cet ID est introuvable")
 
+    @_checkpoint_params.command()
+    async def delstarting(self, ctx, namestart: str):
+        """Supprime les données de tous les 'jeux' commençant par..."""
+        games = await self.config.Games()
+        gcopy = deepcopy(games)
+        for g in gcopy:
+            if gcopy[g]["name"].lower().startswith(namestart):
+                del games[g]
+        await self.config.Games.set(games)
+        await ctx.send(f"**Succès** • Les données de ces jeux ont été supprimées")
