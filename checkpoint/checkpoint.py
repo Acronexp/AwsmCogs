@@ -261,7 +261,7 @@ class Checkpoint(commands.Cog):
         em_color = await ctx.embed_color()
         for p in players:
             name = str(p)
-            chunk = f"{name}\n"
+            chunk = f"*{name}*\n"
             if len(txt) + len(chunk) <= 2000:
                 txt += chunk
             else:
@@ -299,11 +299,11 @@ class Checkpoint(commands.Cog):
                             if key in all_users[m.id]["games"]:
                                 players.append(m)
                 if players:
-                    txt = f"Utilisez `;playing {key}` pour voir les jeux qui y jouent actuellement\n\n"
+                    txt = f"Utilisez `;playing {key}` pour voir les membres qui y jouent actuellement\n\n"
                     page = 1
                     for p in players:
                         name = str(p)
-                        chunk = f"{name}\n"
+                        chunk = f"*{name}\n*"
                         if len(txt) + len(chunk) <= 2000:
                             txt += chunk
                         else:
