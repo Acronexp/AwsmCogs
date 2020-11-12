@@ -569,11 +569,11 @@ class Checkpoint(commands.Cog):
         await ctx.send(f"**Succès** • Les données de ces jeux ont été supprimées")
 
     @_checkpoint_params.command(name="link")
-    async def link_games(self, ctx, basekey: str, to_link: List[str]):
+    async def link_games(self, ctx, basekey: str, *to_link: List[str]):
         """Lie plusieurs jeux entre eux pour qu'ils ne soient considérés comme qu'un"""
         games = await self.config.Games()
         basekey = basekey.upper()
-        if basekey in games:
+        if basekey in games and to_link:
             all_users = deepcopy(await self.config.all_users())
             other = []
             if "other_names" in games[basekey]:
