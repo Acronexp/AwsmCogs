@@ -354,6 +354,7 @@ class Checkpoint(commands.Cog):
             await ctx.send("**???** • Entrez l'ID du jeu ou des termes à rechercher")
 
     @commands.command(name="games")
+    @commands.guild_only()
     async def cp_games(self, ctx, *game):
         """Recherche parmi les jeux reconnus par Checkpoint"""
         em_color = await ctx.embed_color()
@@ -568,6 +569,24 @@ class Checkpoint(commands.Cog):
         await self.config.Games.set(games)
         await ctx.send(f"**Succès** • Les données de ces jeux ont été supprimées")
 
+    @_checkpoint_params.command()
+    async def resetdetect(self, ctx, key: str):
+        """Retire un jeu de tous les membres s'il a été détecté chez lui"""
+        games = await self.config.Games()
+        key = key.upper()
+        if key in games:
+            async with ctx.channel.typing():
+                games["uses"] = await self.config.Sensib()
+                all_users = deepcopy(await self.config.all_users())
+                for u in all_users:
+                    user = self.bot.get_user(u)
+                    if key in all_users[u]["games"]:
+                        all_users[u]["games"].remove(key)
+                        await self.config.user(user).games.set(all_users[u]["games"])
+            await ctx.send(f"**Succès** • Les données du jeu ont été reset pour les utilisateurs")
+        else:
+            await ctx.send(f"**Invalide** • Cet ID est introuvable")
+
     @_checkpoint_params.command(name="link")
     async def link_games(self, ctx, basekey: str, *to_link):
         """Lie plusieurs jeux entre eux pour qu'ils ne soient considérés comme qu'un"""
@@ -593,14 +612,10 @@ class Checkpoint(commands.Cog):
 
                         for u in all_users:
                             user = self.bot.get_user(u)
-                            change = False
                             if k.upper() in all_users[u]["games"]:
                                 all_users[u]["games"].remove(k.upper())
-                                change = True
-                            if basekey not in all_users[u]["games"]:
-                                all_users[u]["games"].append(basekey)
-                                change = True
-                            if change:
+                                if basekey not in all_users[u]["games"]:
+                                    all_users[u]["games"].append(basekey)
                                 await self.config.user(user).games.set(all_users[u]["games"])
 
                         del games[k.upper()]
