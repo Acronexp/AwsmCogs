@@ -50,7 +50,7 @@ class Checkpoint(commands.Cog):
         games = await self.verified_games() if database == "verified" else await self.config.Games()
         for g in games:
             if games[g]["name"].strip().lower() == name.strip().lower() or \
-                    name.strip().lower() in [k.lower() for k in games[g]["other_names"]]:
+                    name.strip().lower() in (k.lower() for k in games[g].get("other_names", [])):
                 return g
         return None
 
@@ -574,40 +574,41 @@ class Checkpoint(commands.Cog):
         games = await self.config.Games()
         basekey = basekey.upper()
         if basekey in games and to_link:
-            all_users = deepcopy(await self.config.all_users())
-            other = []
-            if "other_names" in games[basekey]:
-                other = games[basekey]["other_names"]
+            async with ctx.channel.typing():
+                all_users = deepcopy(await self.config.all_users())
+                other = []
+                if "other_names" in games[basekey]:
+                    other = games[basekey]["other_names"]
 
-            for k in to_link:
-                if k.upper() in games:
-                    if games[k.upper()]["name"] not in other:
-                        other.append(games[k.upper()]["name"])
-                        games[basekey]["uses"] += games[k.upper()]["uses"]
+                for k in to_link:
+                    if k.upper() in games:
+                        if games[k.upper()]["name"] not in other:
+                            other.append(games[k.upper()]["name"])
+                            games[basekey]["uses"] += games[k.upper()]["uses"]
 
-                    if "other_names" in games[k.upper()]:
-                        for o in games[k.upper()]["other_names"]:
-                            if o not in other and o != games[basekey]["name"]:
-                                other.append(o)
+                        if "other_names" in games[k.upper()]:
+                            for o in games[k.upper()]["other_names"]:
+                                if o not in other and o != games[basekey]["name"]:
+                                    other.append(o)
 
-                    for u in all_users:
-                        user = self.bot.get_user(u)
-                        change = False
-                        if k.upper() in all_users[u]["games"]:
-                            all_users[u]["games"].remove(k.upper())
-                            change = True
-                        if basekey not in all_users[u]["games"]:
-                            all_users[u]["games"].append(basekey)
-                            change = True
-                        if change:
-                            await self.config.user(user).games.set(all_users[u]["games"])
+                        for u in all_users:
+                            user = self.bot.get_user(u)
+                            change = False
+                            if k.upper() in all_users[u]["games"]:
+                                all_users[u]["games"].remove(k.upper())
+                                change = True
+                            if basekey not in all_users[u]["games"]:
+                                all_users[u]["games"].append(basekey)
+                                change = True
+                            if change:
+                                await self.config.user(user).games.set(all_users[u]["games"])
 
-                    del games[k.upper()]
-                else:
-                    return await ctx.send(f"**Erreur** • Une des clef données n'existe pas")
+                        del games[k.upper()]
+                    else:
+                        return await ctx.send(f"**Erreur** • Une des clef données n'existe pas")
 
-            games[basekey]["other_names"] = other
-            await self.config.Games.set(games)
-            await ctx.send(f"**Succès** • Les données des jeux sélectionnés ont été transférés sur le jeu de base")
+                games[basekey]["other_names"] = other
+                await self.config.Games.set(games)
+                await ctx.send(f"**Succès** • Les données des jeux sélectionnés ont été transférés sur le jeu de base")
         else:
             await ctx.send(f"**Invalide** • Cet ID de jeu est introuvable")
