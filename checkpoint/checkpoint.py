@@ -49,7 +49,8 @@ class Checkpoint(commands.Cog):
     async def get_game_named(self, name: str, database: str = "verified"):
         games = await self.verified_games() if database == "verified" else await self.config.Games()
         for g in games:
-            if games[g]["name"].strip().lower() == name.strip().lower():
+            if games[g]["name"].strip().lower() == name.strip().lower() or \
+                    name.strip().lower() in [k.lower() for k in games[g]["other_names"]]:
                 return g
         return None
 
@@ -89,8 +90,8 @@ class Checkpoint(commands.Cog):
         games = await self.verified_games() if database == "verified" else await self.config.Games()
         async with ctx.channel.typing():
             if len(search) == 6:
-                if search in games:
-                    return search
+                if search.upper() in games:
+                    return search.upper()
             gamenames = (games[game]["name"].lower() for game in games)
             result = process.extractBests(search.lower(), gamenames, score_cutoff=cutoff)
             if result:
@@ -105,11 +106,11 @@ class Checkpoint(commands.Cog):
                         score = f"{g[1]}%"
                         table.append([key, realname, score])
                     em = discord.Embed(description="```" + tabulate(
-                        table, headers=["ID", "Nom", "Score"]) + "```",
+                        table, headers=["ID", "Nom", "Pertinence"]) + "```",
                                        color=em_color)
                     title = f"Recherche Checkpoint · \"{search}\""
                     if database != "verified":
-                        title = f"Recherche avancée Checkpoint · \"{search}\""
+                        title = f"Recherche Checkpoint (avancée) · \"{search}\""
                     em.set_author(name=title, icon_url=ctx.author.avatar_url)
                     em.set_footer(text="» Entrez l'ID du jeu ou 'aucun' s'il n'y figure pas")
                     msg = await ctx.send(embed=em)
@@ -204,7 +205,7 @@ class Checkpoint(commands.Cog):
                     searchbis = resp.content
                     await msg.delete()
                     usergames = await self.config.user(user).games()
-                    if searchbis.strip().lower() not in [games[g]["name"].lower() for g in games]:
+                    if not await self.get_game_named(searchbis.strip().lower()):
                         key = await self.create_gamekey()
                         games[key] = {"name": searchbis.strip(),
                                       "uses": 1,
@@ -212,7 +213,7 @@ class Checkpoint(commands.Cog):
                         usergames.append(key)
                         await ctx.send("**Jeu ajouté à Checkpoint** • Il ne figurera pas dans votre bibliothèque tant qu'au moins un autre membre ne possèdera pas le même jeu")
                     else:
-                        key = [g for g in games if games[g]["name"].lower() == searchbis.lower()][0]
+                        key = await self.get_game_named(searchbis.strip().lower())
                         if key not in usergames:
                             usergames.append(key)
                             games[key]["uses"] += 1
@@ -236,19 +237,21 @@ class Checkpoint(commands.Cog):
                         for game in playing:
                             if game.name[0] in ["!", "?"]:
                                 continue
-                            if game.name.lower() not in [all_games[g]["name"].lower() for g in all_games]:
+                            search = await self.get_game_named(game.name.strip(), database="all")
+                            if not search:
                                 key = await self.create_gamekey()
                                 all_games[key] = {"name": game.name.strip(),
                                                   "uses": 1,
-                                                  "exclude": False}
+                                                  "exclude": False,
+                                                  "other_names": []}
                             else:
-                                key = [g for g in all_games if all_games[g]["name"].lower() == game.name.lower()][0]
+                                key = search
                                 usergames = await self.config.user(after).games()
                                 if key not in usergames:
                                     usergames.append(key)
                                     all_games[key]["uses"] += 1
                                     await self.config.user(after).games.set(usergames)
-                            await self.config.Games.set(all_games)
+                        await self.config.Games.set(all_games)
 
     @commands.command(name="playing")
     @commands.guild_only()
@@ -366,8 +369,14 @@ class Checkpoint(commands.Cog):
                     if m.id in all_users:
                         if key in all_users[m.id]["games"]:
                             players.append(m)
+                other_games = game.get("other_names", [])
+                if other_games:
+                    others = ", ".join((g for g in other_games))
+                else:
+                    others = "Aucun"
                 txt = "**Nb. de détections** - {}\n" \
-                      "**Estimation du nb. de joueurs ici** - {}".format(game["uses"], len(players))
+                      "**Estimation du nb. de joueurs ici** - {}\n" \
+                      "**Autres noms** - {}".format(game["uses"], len(players), others)
                 em = discord.Embed(title=f"__**Checkpoint**__ · *{gamename}*", description=txt,
                                    color=em_color)
                 if players:
@@ -512,6 +521,7 @@ class Checkpoint(commands.Cog):
     async def exclude(self, ctx, key: str):
         """Exclue un jeu de la liste des jeux vérifiés"""
         games = await self.config.Games()
+        key = key.upper()
         if key in games:
             if "exclude" in games[key]:
                 if games[key]["exclude"]:
@@ -557,3 +567,47 @@ class Checkpoint(commands.Cog):
                 del games[g]
         await self.config.Games.set(games)
         await ctx.send(f"**Succès** • Les données de ces jeux ont été supprimées")
+
+    @_checkpoint_params.command(name="link")
+    async def link_games(self, ctx, basekey: str, to_link: List[str]):
+        """Lie plusieurs jeux entre eux pour qu'ils ne soient considérés comme qu'un"""
+        games = await self.config.Games()
+        basekey = basekey.upper()
+        if basekey in games:
+            all_users = deepcopy(await self.config.all_users())
+            other = []
+            if "other_names" in games[basekey]:
+                other = games[basekey]["other_names"]
+
+            for k in to_link:
+                if k.upper() in games:
+                    if games[k.upper()]["name"] not in other:
+                        other.append(games[k.upper()]["name"])
+                        games[basekey]["uses"] += games[k.upper()]["uses"]
+
+                    if "other_names" in games[k.upper()]:
+                        for o in games[k.upper()]["other_names"]:
+                            if o not in other and o != games[basekey]["name"]:
+                                other.append(o)
+
+                    for u in all_users:
+                        user = self.bot.get_user(u)
+                        change = False
+                        if k.upper() in all_users[u]["games"]:
+                            all_users[u]["games"].remove(k.upper())
+                            change = True
+                        if basekey not in all_users[u]["games"]:
+                            all_users[u]["games"].append(basekey)
+                            change = True
+                        if change:
+                            await self.config.user(user).games.set(all_users[u]["games"])
+
+                    del games[k.upper()]
+                else:
+                    return await ctx.send(f"**Erreur** • Une des clef données n'existe pas")
+
+            games[basekey]["other_names"] = other
+            await self.config.Games.set(games)
+            await ctx.send(f"**Succès** • Les données des jeux sélectionnés ont été transférés sur le jeu de base")
+        else:
+            await ctx.send(f"**Invalide** • Cet ID de jeu est introuvable")
