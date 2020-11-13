@@ -17,7 +17,7 @@ from tabulate import tabulate
 logger = logging.getLogger("red.AwsmCogs.checkpoint")
 
 class Checkpoint(commands.Cog):
-    """Système de groupes de jeux"""
+    """Trouvez facilement des partenaires de jeux !"""
 
     def __init__(self, bot):
         super().__init__()
@@ -484,7 +484,7 @@ class Checkpoint(commands.Cog):
             for j in jeux:
                 all_games.append((j, games[j]["name"].strip(), games[j]["name"].strip().lower()))
             for g in all_user_games:
-                if g not in all_games:
+                if g not in jeux:
                     not_verified += 1
             all_games = sorted(all_games, key=operator.itemgetter(2))
             txt = ""
