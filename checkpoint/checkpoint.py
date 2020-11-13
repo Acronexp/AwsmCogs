@@ -211,7 +211,8 @@ class Checkpoint(commands.Cog):
                                       "uses": 1,
                                       "exclude": False}
                         usergames.append(key)
-                        await ctx.send("**Jeu ajouté à Checkpoint** • Il ne figurera pas dans votre bibliothèque tant qu'au moins un autre membre ne possèdera pas le même jeu")
+                        await ctx.send("**Jeu ajouté à Checkpoint** • Il ne figurera pas dans votre bibliothèque tant "
+                                       "qu'il n'existe pas au moins {} exemplaires sur tous les serveurs.".format(await self.config.Sensib()))
                     else:
                         key = await self.get_game_named(searchbis.strip().lower())
                         if key not in usergames:
@@ -293,14 +294,14 @@ class Checkpoint(commands.Cog):
             else:
                 em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{gamename}\"", description=txt,
                                    color=em_color)
-                em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+                em.set_footer(text=f"Page #{page} (sur ce serveur)")
                 await ctx.send(embed=em)
                 txt = chunk
                 page += 1
         if txt:
             em = discord.Embed(title=f"\🔴 __**Checkpoint**__ · Jouant actuellement à \"{gamename}\"", description=txt,
                                color=em_color)
-            em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+            em.set_footer(text=f"Page #{page} (sur ce serveur)")
             await ctx.send(embed=em)
 
 
@@ -337,14 +338,14 @@ class Checkpoint(commands.Cog):
                         else:
                             em = discord.Embed(title=f"__**Checkpoint**__ · Membres possédant \"{gamename}\"", description=txt,
                                                color=em_color)
-                            em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+                            em.set_footer(text=f"Page #{page} (sur ce serveur)")
                             await ctx.send(embed=em)
                             txt = chunk
                             page += 1
                     if txt:
                         em = discord.Embed(title=f"__**Checkpoint**__ · Membres possédant \"{gamename}\"", description=txt,
                                            color=em_color)
-                        em.set_footer(text=f"Page #{page} • Sur ce serveur seulement")
+                        em.set_footer(text=f"Page #{page} (sur ce serveur)")
                         await ctx.send(embed=em)
                 else:
                     await ctx.send("**Aucun joueur** • Personne sur ce serveur ne joue à ce jeu")
@@ -354,7 +355,6 @@ class Checkpoint(commands.Cog):
             await ctx.send("**???** • Entrez l'ID du jeu ou des termes à rechercher")
 
     @commands.command(name="games")
-    @commands.guild_only()
     async def cp_games(self, ctx, *game):
         """Recherche parmi les jeux reconnus par Checkpoint"""
         em_color = await ctx.embed_color()
@@ -363,21 +363,25 @@ class Checkpoint(commands.Cog):
             key = await self.get_gamekey(ctx, " ".join(game))
             if key:
                 game = games[key]
-                gamename = game["name"]
                 players = []
-                all_users = await self.config.all_users()
-                for m in ctx.guild.members:
-                    if m.id in all_users:
-                        if key in all_users[m.id]["games"]:
-                            players.append(m)
+                gamename = game["name"]
                 other_games = game.get("other_names", [])
                 if other_games:
                     others = ", ".join((g for g in other_games))
                 else:
                     others = "Aucun"
-                txt = "**Nb. de détections** - {}\n" \
-                      "**Estimation du nb. de joueurs ici** - {}\n" \
-                      "**Autres noms** - {}".format(game["uses"], len(players), others)
+                if not isinstance(ctx.channel, discord.DMChannel):
+                    all_users = await self.config.all_users()
+                    for m in ctx.guild.members:
+                        if m.id in all_users:
+                            if key in all_users[m.id]["games"]:
+                                players.append(m)
+                    txt = "**Nb. de détections** - {}\n" \
+                          "**Estimation du nb. de joueurs ici** - {}\n" \
+                          "**Autres noms** - {}".format(game["uses"], len(players), others)
+                else:
+                    txt = "**Nb. de détections** - {}\n" \
+                          "**Autres noms** - {}".format(game["uses"], others)
                 em = discord.Embed(title=f"__**Checkpoint**__ · *{gamename}*", description=txt,
                                    color=em_color)
                 if players:
@@ -472,14 +476,21 @@ class Checkpoint(commands.Cog):
         """Liste les jeux possédés"""
         user = user if user else ctx.author
         jeux = await self.user_verified_games(user)
+        all_user_games = await self.config.user(user).games()
         if jeux:
             games = await self.config.Games()
             all_games = []
+            not_verified = 0
             for j in jeux:
                 all_games.append((j, games[j]["name"].strip(), games[j]["name"].strip().lower()))
+            for g in all_user_games:
+                if g not in all_games:
+                    not_verified += 1
             all_games = sorted(all_games, key=operator.itemgetter(2))
             txt = ""
             page = 1
+            plus = "" if not_verified < 1 else f" • +{not_verified} jeux non vérifiés"
+
             for g in all_games:
                 chunk = f"**{g[0]}** · *{g[1]}*\n"
                 if len(txt) + len(chunk) <= 2000:
@@ -487,14 +498,14 @@ class Checkpoint(commands.Cog):
                 else:
                     em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
                     em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
-                    em.set_footer(text=f"Page #{page}")
+                    em.set_footer(text=f"Page #{page}{plus}")
                     await ctx.send(embed=em)
                     txt = chunk
                     page += 1
             if txt:
                 em = discord.Embed(description=txt, color=user.color, timestamp=ctx.message.created_at)
                 em.set_author(name=f"Checkpoint · {user}", icon_url=user.avatar_url)
-                em.set_footer(text=f"Page #{page}")
+                em.set_footer(text=f"Page #{page}{plus}")
                 await ctx.send(embed=em)
         else:
             await ctx.send("**Bibliothèque vide** • Aucun jeu n'a été détecté ou enregistré avec ce compte")
