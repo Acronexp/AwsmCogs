@@ -489,7 +489,11 @@ class Checkpoint(commands.Cog):
             all_games = sorted(all_games, key=operator.itemgetter(2))
             txt = ""
             page = 1
-            plus = "" if not_verified < 1 else f" • +{not_verified} jeux non vérifiés"
+            plus = ""
+            if not_verified == 1:
+                plus = f" • +{not_verified} jeu non vérifié"
+            elif not_verified > 1:
+                plus = f" • +{not_verified} jeux non vérifiés"
 
             for g in all_games:
                 chunk = f"**{g[0]}** · *{g[1]}*\n"
