@@ -173,14 +173,15 @@ class XRole(commands.Cog):
                 role = None
 
         if role:
-            if role.id in data:
+            rid = str(role.id)
+            if rid in data:
                 if role in (r for r in ctx.author.roles):
                     await ctx.author.remove_roles(role, reason="Auto-retrait du rôle (;iam)")
-                    data[role.id]["uses"] -= 1
+                    data[rid]["uses"] -= 1
                     await ctx.send(f"**Rôle retiré** • Vous n'avez plus le rôle *{role.name}*")
                 else:
                     await ctx.author.add_roles(role, reason="Auto-attribution du rôle (;iam)")
-                    data[role.id]["uses"] += 1
+                    data[rid]["uses"] += 1
                     await ctx.send(f"**Rôle ajouté** • Vous avez désormais le rôle *{role.name}*")
                 await self.config.guild(guild).selfroles.set(data)
             else:
@@ -201,9 +202,10 @@ class XRole(commands.Cog):
         Donne une liste des rôles auto-attribuables si aucun rôle n'est précisé"""
         guild = ctx.guild
         if role:
+            rid = str(role.id)
             data = await self.config.guild(guild).selfroles()
             if role.id not in data:
-                data[role.id] = {"uses": 0}
+                data[rid] = {"uses": 0}
                 await self.config.guild(guild).selfroles.set(data)
                 await ctx.send(f"**Rôle ajouté** • Le rôle *{role.name}* a été ajouté avec succès aux rôles autto-attribuables.")
             else:
@@ -218,9 +220,10 @@ class XRole(commands.Cog):
         Donne une liste des rôles auto-attribuables si aucun rôle n'est précisé"""
         guild = ctx.guild
         if role:
+            rid = str(role.id)
             data = await self.config.guild(guild).selfroles()
-            if role.id in data:
-                del data[role.id]
+            if str(rid) in data:
+                del data[rid]
                 await self.config.guild(guild).selfroles.set(data)
                 await ctx.send(f"**Rôle retiré** • Le rôle *{role.name}* a été retiré des rôles auto-attribuables.")
             else:
