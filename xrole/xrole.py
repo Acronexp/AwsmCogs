@@ -52,7 +52,7 @@ class XRole(commands.Cog):
             txt = ""
             for r in liste:
                 try:
-                    role = guild.get_role(r)
+                    role = guild.get_role(int(r))
                 except:
                     logger.info(f"Le rôle {r} était inaccessible et a donc été supprimé")
                     del data[r]
@@ -69,9 +69,9 @@ class XRole(commands.Cog):
                     if rdata.get("joined", False):
                         chunk += "\n   » **Ancienneté min. du membre** = {}j".format(rdata["joined"])
                     if rdata.get("roles", False):
-                        chunk += "\n   » **Rôles nécéssaires** = {}".format(", ".join([guild.get_role(i).name for i in rdata["roles"]]))
+                        chunk += "\n   » **Rôles nécéssaires** = {}".format(", ".join([guild.get_role(int(i)).name for i in rdata["roles"]]))
                     if rdata.get("noroles", False):
-                        chunk += "\n   » **Rôles incompatibles** = {}".format(", ".join([guild.get_role(i).name for i in rdata["noroles"]]))
+                        chunk += "\n   » **Rôles incompatibles** = {}".format(", ".join([guild.get_role(int(i)).name for i in rdata["noroles"]]))
 
                 chunk += "\n"
                 if len(txt) + len(chunk) < 2000:
@@ -108,7 +108,7 @@ class XRole(commands.Cog):
             txt = ""
             for r in liste:
                 try:
-                    found = guild.get_role(r)
+                    found = guild.get_role(int(r))
                 except:
                     logger.info(f"Le rôle {r} était inaccessible et a donc été supprimé")
                     del data[r]
@@ -126,10 +126,10 @@ class XRole(commands.Cog):
                         chunk += "\n   » **Ancienneté min. du membre** = {}j".format(rdata["joined"])
                     if rdata.get("roles", False):
                         chunk += "\n   » **Rôles nécéssaires** = {}".format(
-                            ", ".join([guild.get_role(i).name for i in rdata["roles"]]))
+                            ", ".join([guild.get_role(int(i)).name for i in rdata["roles"]]))
                     if rdata.get("noroles", False):
                         chunk += "\n   » **Rôles incompatibles** = {}".format(
-                            ", ".join([guild.get_role(i).name for i in rdata["noroles"]]))
+                            ", ".join([guild.get_role(int(i)).name for i in rdata["noroles"]]))
 
                 chunk += "\n"
                 nbs.append((n, found))
