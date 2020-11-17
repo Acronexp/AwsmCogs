@@ -59,7 +59,7 @@ class XRole(commands.Cog):
                     update = True
                     continue
                 rdata = data[r]
-                chunk = f"• **{role.name}**"
+                chunk = f"• **@{role.name}**"
                 if role.mentionable:
                     chunk = f"• {role.mention}"
 
@@ -115,9 +115,9 @@ class XRole(commands.Cog):
                     update = True
                     continue
                 rdata = data[r]
-                chunk = f"__{n}__. **{found.name}**"
+                chunk = f"**{n}**. **@{found.name}**"
                 if found.mentionable:
-                    chunk = f"__{n}__. {found.mention}"
+                    chunk = f"**{n}**. {found.mention}"
 
                 if (c for c in list(_CONDITIONS.keys()) if c in rdata):
                     if rdata.get("created", False):
