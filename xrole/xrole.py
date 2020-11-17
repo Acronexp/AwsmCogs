@@ -96,6 +96,8 @@ class XRole(commands.Cog):
         Affiche un menu de sélection si aucun rôle n'est rentré"""
         guild = ctx.guild
         data = await self.config.guild(guild).selfroles()
+        if not data:
+            return await ctx.send(f"**Aucun rôle** • Aucun rôle n'a été configuré pour être auto-attribuable sur ce serveur")
         color = await self.bot.get_embed_color(ctx.channel)
         if not role:
             nbs = []
