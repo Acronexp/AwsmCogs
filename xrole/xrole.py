@@ -37,7 +37,7 @@ class XRole(commands.Cog):
     async def get_selfroles(self, guild: discord.Guild):
         data = await self.config.guild(guild).selfroles()
         if data:
-            roles = [(data[i]["uses"], i) for i in data]
+            roles = [[data[i]["uses"], i] for i in data]
             roles = sorted(roles, key=operator.itemgetter(0), reverse=True)
             return [r[1] for r in roles]
         return []
@@ -108,16 +108,16 @@ class XRole(commands.Cog):
             txt = ""
             for r in liste:
                 try:
-                    role = guild.get_role(r)
+                    found = guild.get_role(r)
                 except:
                     logger.info(f"Le rôle {r} était inaccessible et a donc été supprimé")
                     del data[r]
                     update = True
                     continue
                 rdata = data[r]
-                chunk = f"__{n}__. **{role.name}**"
-                if role.mentionable:
-                    chunk = f"__{n}__. {role.mention}"
+                chunk = f"__{n}__. **{found.name}**"
+                if found.mentionable:
+                    chunk = f"__{n}__. {found.mention}"
 
                 if (c for c in list(_CONDITIONS.keys()) if c in rdata):
                     if rdata.get("created", False):
@@ -132,7 +132,7 @@ class XRole(commands.Cog):
                             ", ".join([guild.get_role(i).name for i in rdata["noroles"]]))
 
                 chunk += "\n"
-                nbs.append((n, role))
+                nbs.append((n, found))
                 n += 1
                 if len(txt) + len(chunk) < 2000:
                     txt += chunk
@@ -176,10 +176,13 @@ class XRole(commands.Cog):
             if role.id in data:
                 if role in (r for r in ctx.author.roles):
                     await ctx.author.remove_roles(role, reason="Auto-retrait du rôle (;iam)")
+                    data[role.id]["uses"] -= 1
                     await ctx.send(f"**Rôle retiré** • Vous n'avez plus le rôle *{role.name}*")
                 else:
                     await ctx.author.add_roles(role, reason="Auto-attribution du rôle (;iam)")
+                    data[role.id]["uses"] += 1
                     await ctx.send(f"**Rôle ajouté** • Vous avez désormais le rôle *{role.name}*")
+                await self.config.guild(guild).selfroles.set(data)
             else:
                 await ctx.send(f"**Rôle absent de la liste** • Ce rôle n'est pas auto-attribuable")
         else:
