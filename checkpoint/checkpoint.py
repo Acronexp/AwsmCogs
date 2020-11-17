@@ -150,7 +150,7 @@ class Checkpoint(commands.Cog):
         else:
             em = discord.Embed(description="**Je n'ai pas trouvé ce jeu dans ceux qui ont été vérifiés**, nous allons donc ajouter votre jeu pour qu'il soit reconnu par Checkpoint. D'abord, choisissez une méthode d'ajout :\n"
                                            "- `detect` : faire détecter le jeu par Checkpoint (PC uniquement)\n"
-                                           "- `manuel` : entrer manuellement le nom du jeu (toutes plateformes)", color=em_color)
+                                           "- `manuel` : chercher/entrer manuellement le nom du jeu (toutes plateformes)", color=em_color)
             em.set_author(name=f"Checkpoint · Proposer un nouveau jeu",
                           icon_url=ctx.author.avatar_url)
             em.set_footer(text="» Entrez le nom de la méthode que vous voulez utiliser")
