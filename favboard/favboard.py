@@ -180,7 +180,7 @@ class Favboard(commands.Cog):
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
-                    if message.created_at + timedelta(days=1) > datetime.utcnow():
+                    if message.created_at.timestamp() + 86400 > datetime.utcnow().timestamp():
                         user = guild.get_member(payload.user_id)
                         favchan = guild.get_channel(data["channel"])
 
