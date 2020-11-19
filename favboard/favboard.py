@@ -26,11 +26,12 @@ class Favboard(commands.Cog):
     async def post_fav(self, message: discord.Message, destination: discord.TextChannel):
         guild = message.guild
         data = await self.config.guild(guild).all()
+        favs = await self.config.guild(guild).favs()
         color = data["color"] if data["color"] else await self.bot.get_embed_color(destination)
 
         text = f"[→ Aller au message]({message.jump_url})\n"
         text += message.content
-        votes = len(data["favs"][str(message.id)]["votes"])
+        votes = len(favs[str(message.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
 
@@ -64,8 +65,9 @@ class Favboard(commands.Cog):
     async def edit_fav(self, original: discord.Message, embed_msg: discord.Message):
         guild = embed_msg.guild
         data = await self.config.guild(guild).all()
+        favs = await self.config.guild(guild).favs()
         em = embed_msg.embeds[0]
-        votes = len(data["favs"][str(original.id)]["votes"])
+        votes = len(favs[str(original.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
         em.set_footer(text=foot)
@@ -76,10 +78,9 @@ class Favboard(commands.Cog):
         except:
             logger.info(f"Suppression des données de {original.id} car impossibilité définitive d'accéder à MSG_ID={embed_msg.id} "
                         f"(message probablement supprimé)")
-            del data["favs"][original.id]
-            await self.config.guild(guild).favs.set(data["favs"])
+            del favs[original.id]
+            await self.config.guild(guild).favs.set(favs)
             raise
-
 
     @commands.group(name="fav")
     @commands.guild_only()
@@ -175,6 +176,7 @@ class Favboard(commands.Cog):
         if hasattr(channel, "guild"):
             guild = channel.guild
             data = await self.config.guild(guild).all()
+            favs = await self.config.guild(guild).favs()
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
@@ -182,24 +184,23 @@ class Favboard(commands.Cog):
                         user = guild.get_member(payload.user_id)
                         favchan = guild.get_channel(data["channel"])
 
-                        if message.id not in data["favs"]:
-                            data["favs"][message.id] = {"votes": [],
-                                                        "embed": None}
+                        if message.id not in favs:
+                            favs[message.id] = {"votes": [], "embed": None}
 
-                        if user.id not in data["favs"][message.id]["votes"]:
-                            data["favs"][message.id]["votes"].append(user.id)
-                            if len(data["favs"][message.id]["votes"]) >= data["target"] or (
+                        if user.id not in favs[message.id]["votes"]:
+                            favs[message.id]["votes"].append(user.id)
+                            if len(favs[message.id]["votes"]) >= data["target"] or (
                                     data["mod_override"] and user.permissions_in(channel).manage_messages):
-                                if not data["favs"][message.id]["embed"]:
+                                if not favs[message.id]["embed"]:
                                     embed_msg = await self.post_fav(message, favchan)
-                                    data["favs"][message.id]["embed"] = embed_msg.id
+                                    favs[message.id]["embed"] = embed_msg.id
                                 else:
-                                    embed_msg = await channel.fetch_message(data["favs"][message.id]["embed"])
+                                    embed_msg = await channel.fetch_message(favs[message.id]["embed"])
                                     await self.edit_fav(message, embed_msg)
-                            await self.config.guild(guild).favs.set(data["favs"])
+                            await self.config.guild(guild).favs.set(favs)
 
-                    elif message.id in data["favs"]: # Suppression des données des MSG de +24h
-                        del data["favs"][message.id]
-                        await self.config.guild(guild).favs.set(data["favs"])
+                    elif message.id in favs: # Suppression des données des MSG de +24h
+                        del favs[message.id]
+                        await self.config.guild(guild).favs.set(favs)
 
 
