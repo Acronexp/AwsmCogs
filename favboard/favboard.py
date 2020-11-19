@@ -56,7 +56,7 @@ class Favboard(commands.Cog):
             if emimg:
                 emtxt = emtxt + f"\n{emimg}" if emtxt else f">>> {emimg}"
         elif emimg:
-            em.set_image(url=img)
+            em.set_image(url=emimg)
         if emtxt:
             em.add_field(name="Contenu dans le message ↓", value=emtxt)
 
