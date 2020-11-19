@@ -204,7 +204,7 @@ class Favboard(commands.Cog):
                                     embed_msg = await self.post_fav(message, favchan)
                                     fav["embed"] = embed_msg.id
                                 else:
-                                    embed_msg = await channel.fetch_message(fav["embed"])
+                                    embed_msg = await favchan.fetch_message(fav["embed"])
                                     await self.edit_fav(message, embed_msg)
                                 await self.config.guild(guild).favs.set_raw(message.id, value=fav)
 
