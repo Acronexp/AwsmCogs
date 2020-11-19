@@ -186,10 +186,10 @@ class Favboard(commands.Cog):
 
                         if message.id not in favs:
                             favs[message.id] = {"votes": [], "embed": None}
-                            await self.config.guild(guild).favs.set(favs)
 
                         if user.id not in favs[message.id]["votes"]:
                             favs[message.id]["votes"].append(user.id)
+                            await self.config.guild(guild).favs.set(favs)
                             if len(favs[message.id]["votes"]) >= data["target"] or (
                                     data["mod_override"] and user.permissions_in(channel).manage_messages):
                                 if not favs[message.id]["embed"]:
@@ -198,7 +198,7 @@ class Favboard(commands.Cog):
                                 else:
                                     embed_msg = await channel.fetch_message(favs[message.id]["embed"])
                                     await self.edit_fav(message, embed_msg)
-                            await self.config.guild(guild).favs.set(favs)
+                                await self.config.guild(guild).favs.set(favs)
 
                     elif message.id in favs: # Suppression des données des MSG de +24h
                         del favs[message.id]
