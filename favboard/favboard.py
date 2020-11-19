@@ -164,9 +164,10 @@ class Favboard(commands.Cog):
     async def on_raw_reaction_add(self, payload):
         channel = self.bot.get_channel(payload.channel_id)
         emoji = payload.emoji.name
-        if channel.guild:
+        if hasattr(channel, "guild"):
             guild = channel.guild
             data = await self.config.guild(guild)
+            logger.info("Emoji détecté pour favoris")
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
