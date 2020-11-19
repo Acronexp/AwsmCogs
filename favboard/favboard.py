@@ -178,29 +178,30 @@ class Favboard(commands.Cog):
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
+                    msgid = int(message.id)
                     if message.created_at + timedelta(days=1) > datetime.utcnow():
                         user = guild.get_member(payload.user_id)
                         favchan = guild.get_channel(data["channel"])
 
-                        if message.id not in data["favs"]:
-                            data["favs"][message.id] = {"votes": [],
+                        if msgid not in data["favs"]:
+                            data["favs"][msgid] = {"votes": [],
                                                         "embed": None}
                             await self.config.guild(guild).favs.set(data["favs"])
 
-                        if user.id not in data["favs"][message.id]["votes"]:
-                            data["favs"][message.id]["votes"].append(user.id)
-                            if len(data["favs"][message.id]["votes"]) >= data["target"] or (
+                        if user.id not in data["favs"][msgid]["votes"]:
+                            data["favs"][msgid]["votes"].append(user.id)
+                            if len(data["favs"][msgid]["votes"]) >= data["target"] or (
                                     data["mod_override"] and user.permissions_in(channel).manage_messages):
-                                if not data["favs"][message.id]["embed"]:
+                                if not data["favs"][msgid]["embed"]:
                                     embed_msg = await self.post_fav(message, favchan)
-                                    data["favs"][message.id]["embed"] = embed_msg.id
+                                    data["favs"][msgid]["embed"] = int(embed_msg.id)
                                 else:
-                                    embed_msg = await channel.fetch_message(data["favs"][message.id]["embed"])
+                                    embed_msg = await channel.fetch_message(data["favs"][msgid]["embed"])
                                     await self.edit_fav(message, embed_msg)
                             await self.config.guild(guild).favs.set(data["favs"])
 
-                    elif message.id in data["favs"]: # Suppression des données des MSG de +24h
-                        del data["favs"][message.id]
+                    elif msgid in data["favs"]: # Suppression des données des MSG de +24h
+                        del data["favs"][msgid]
                         await self.config.guild(guild).favs.set(data["favs"])
 
 
