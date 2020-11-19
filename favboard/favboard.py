@@ -185,6 +185,7 @@ class Favboard(commands.Cog):
                         if message.id not in data["favs"]:
                             data["favs"][message.id] = {"votes": [],
                                                         "embed": None}
+                            await self.config.guild(guild).favs.set(data["favs"])
 
                         if user.id not in data["favs"][message.id]["votes"]:
                             data["favs"][message.id]["votes"].append(user.id)
