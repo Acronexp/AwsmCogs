@@ -31,7 +31,7 @@ class Favboard(commands.Cog):
 
         text = f"[→ Aller au message]({message.jump_url})\n"
         text += message.content
-        votes = len(favs[message.id]["votes"])
+        votes = len(favs[str(message.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
 
@@ -67,7 +67,7 @@ class Favboard(commands.Cog):
         data = await self.config.guild(guild).all()
         favs = await self.config.guild(guild).favs()
         em = embed_msg.embeds[0]
-        votes = len(favs[original.id]["votes"])
+        votes = len(favs[str(original.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
         em.set_footer(text=foot)
@@ -78,7 +78,7 @@ class Favboard(commands.Cog):
         except:
             logger.info(f"Suppression des données de {original.id} car impossibilité définitive d'accéder à MSG_ID={embed_msg.id} "
                         f"(message probablement supprimé)")
-            del favs[original.id]
+            del favs[str(original.id)]
             await self.config.guild(guild).favs.set(favs)
             raise
 
