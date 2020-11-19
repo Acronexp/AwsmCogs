@@ -149,6 +149,7 @@ class Favboard(commands.Cog):
                 em = discord.Embed(title="Couleur modifiée",
                                    description=f"Ceci est une démonstration de la couleur des Embeds du salon des favoris.",
                                    color=color)
+                await self.config.guild(ctx.guild).color.set(color)
             except:
                 return await ctx.send("**Erreur** • La couleur est invalide.\n"
                                       "Sachez qu'elle doit être fournie au format hexadécimal (ex. `D5D5D5` ou `0xD5D5D5`) et que certaines couleurs sont réservées par Discord.")
@@ -156,8 +157,7 @@ class Favboard(commands.Cog):
             em = discord.Embed(title="Couleur retirée",
                                description=f"Ceci est une démonstration de la couleur des Embeds du salon des favoris.",
                                color=color)
-        perso = await self.config.guild(ctx.guild).color()
-        await self.config.guild(ctx.guild).color.set(perso)
+            await self.config.guild(ctx.guild).color.set(None)
         await ctx.send(embed=em)
 
     @_favboard.command(name="reset")
