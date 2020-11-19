@@ -1,16 +1,8 @@
-import asyncio
 from datetime import datetime, timedelta
 import logging
-import operator
-import random
-import time
-import roman
 
 import discord
-from fuzzywuzzy import process
 from redbot.core import Config, commands, checks
-from redbot.core.utils.menus import start_adding_reactions
-from tabulate import tabulate
 
 logger = logging.getLogger("red.AwsmCogs.favboard")
 
