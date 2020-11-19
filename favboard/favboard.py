@@ -166,8 +166,7 @@ class Favboard(commands.Cog):
         emoji = payload.emoji.name
         if hasattr(channel, "guild"):
             guild = channel.guild
-            data = await self.config.guild(guild)
-            logger.info("Emoji détecté pour favoris")
+            data = await self.config.guild(guild).all()
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
