@@ -30,7 +30,7 @@ class Favboard(commands.Cog):
 
         text = f"[→ Aller au message]({message.jump_url})\n"
         text += message.content
-        votes = len(data["favs"][message.id]["votes"])
+        votes = len(data["favs"][str(message.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
 
@@ -65,7 +65,7 @@ class Favboard(commands.Cog):
         guild = embed_msg.guild
         data = await self.config.guild(guild).all()
         em = embed_msg.embeds[0]
-        votes = len(data["favs"][original.id]["votes"])
+        votes = len(data["favs"][str(original.id)]["votes"])
         emoji = data["emoji"]
         foot = f"{emoji} {votes}"
         em.set_footer(text=foot)
@@ -166,7 +166,7 @@ class Favboard(commands.Cog):
         await self.config.guild(ctx.guild).clear()
         await ctx.send("**Reset effectué** • Les données du serveur ont été reset.\n"
                        "Notez que ça n'efface pas les messages déjà postés sur le salon, mais l'historique ayant été effacé un message peut être reposté.\n"
-                       "N'oubliez pas de rétablir vos paramètres si vous voulez réutiliser cette fonctionnalité.")
+                       "N'oubliez pas de rétablir vos paramètres si vous voulez réutiliser ce module.")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -178,30 +178,28 @@ class Favboard(commands.Cog):
             if emoji == data["emoji"]:
                 if data["channel"]:
                     message = await channel.fetch_message(payload.message_id)
-                    msgid = int(message.id)
                     if message.created_at + timedelta(days=1) > datetime.utcnow():
                         user = guild.get_member(payload.user_id)
                         favchan = guild.get_channel(data["channel"])
 
-                        if msgid not in data["favs"]:
-                            data["favs"][msgid] = {"votes": [],
+                        if message.id not in data["favs"]:
+                            data["favs"][message.id] = {"votes": [],
                                                         "embed": None}
-                            await self.config.guild(guild).favs.set(data["favs"])
 
-                        if user.id not in data["favs"][msgid]["votes"]:
-                            data["favs"][msgid]["votes"].append(user.id)
-                            if len(data["favs"][msgid]["votes"]) >= data["target"] or (
+                        if user.id not in data["favs"][message.id]["votes"]:
+                            data["favs"][message.id]["votes"].append(user.id)
+                            if len(data["favs"][message.id]["votes"]) >= data["target"] or (
                                     data["mod_override"] and user.permissions_in(channel).manage_messages):
-                                if not data["favs"][msgid]["embed"]:
+                                if not data["favs"][message.id]["embed"]:
                                     embed_msg = await self.post_fav(message, favchan)
-                                    data["favs"][msgid]["embed"] = int(embed_msg.id)
+                                    data["favs"][message.id]["embed"] = embed_msg.id
                                 else:
-                                    embed_msg = await channel.fetch_message(data["favs"][msgid]["embed"])
+                                    embed_msg = await channel.fetch_message(data["favs"][message.id]["embed"])
                                     await self.edit_fav(message, embed_msg)
                             await self.config.guild(guild).favs.set(data["favs"])
 
-                    elif msgid in data["favs"]: # Suppression des données des MSG de +24h
-                        del data["favs"][msgid]
+                    elif message.id in data["favs"]: # Suppression des données des MSG de +24h
+                        del data["favs"][message.id]
                         await self.config.guild(guild).favs.set(data["favs"])
 
 
