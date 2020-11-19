@@ -25,7 +25,7 @@ class Favboard(commands.Cog):
 
     async def post_fav(self, message: discord.Message, destination: discord.TextChannel):
         guild = message.guild
-        data = await self.config.guild(guild)
+        data = await self.config.guild(guild).all()
         color = data["color"] if data["color"] else await self.bot.get_embed_color(destination)
 
         text = f"[→ Aller au message]({message.jump_url})\n"
@@ -63,7 +63,7 @@ class Favboard(commands.Cog):
 
     async def edit_fav(self, original: discord.Message, embed_msg: discord.Message):
         guild = embed_msg.guild
-        data = await self.config.guild(guild)
+        data = await self.config.guild(guild).all()
         em = embed_msg.embeds[0]
         votes = len(data["favs"][original.id]["votes"])
         emoji = data["emoji"]
@@ -159,6 +159,14 @@ class Favboard(commands.Cog):
         perso = await self.config.guild(ctx.guild).color()
         await self.config.guild(ctx.guild).color.set(perso)
         await ctx.send(embed=em)
+
+    @_favboard.command(name="reset")
+    async def fav_reset(self, ctx):
+        """Reset toutes les données Favboard du serveur """
+        await self.config.guild(ctx.guild).clear()
+        await ctx.send("**Reset effectué** • Les données du serveur ont été reset.\n"
+                       "Notez que ça n'efface pas les messages déjà postés sur le salon, mais l'historique ayant été effacé un message peut être reposté.\n"
+                       "N'oubliez pas de rétablir vos paramètres si vous voulez réutiliser cette fonctionnalité.")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
