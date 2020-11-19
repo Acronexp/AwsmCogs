@@ -200,8 +200,6 @@ class Favboard(commands.Cog):
                                     await self.edit_fav(message, embed_msg)
                                 await self.config.guild(guild).favs.set(favs)
 
-                    elif message.id in favs: # Suppression des données des MSG de +24h
-                        del favs[message.id]
-                        await self.config.guild(guild).favs.set(favs)
+
 
 
