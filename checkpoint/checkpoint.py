@@ -17,14 +17,14 @@ from tabulate import tabulate
 logger = logging.getLogger("red.AwsmCogs.checkpoint")
 
 class Checkpoint(commands.Cog):
-    """Trouvez facilement des partenaires de jeux !"""
+    """Base de données des jeux joués, groupes de jeux et outils liés"""
 
     def __init__(self, bot):
         super().__init__()
         self.bot = bot
         self.config = Config.get_conf(self, identifier=736144321857978388, force_registration=True)
 
-        default_guild = {}
+        default_guild = {"autostream_channels": {}}
         default_user = {"games": [],
                         "private": False}
         default_global = {"Games": {},
@@ -446,7 +446,7 @@ class Checkpoint(commands.Cog):
 
     @commands.group(name="checkpoint", aliases=["cp"])
     async def _checkpoint_profile(self, ctx):
-        """Paramètres personnalisés Checkpoint"""
+        """Paramètres personnels Checkpoint"""
 
     @_checkpoint_profile.command()
     async def addgame(self, ctx, *game):
@@ -527,13 +527,73 @@ class Checkpoint(commands.Cog):
             await ctx.send("**Privé** • Votre bibliothèque est désormais restreinte aux seuls membres cherchant spécifiquement vos jeux")
         await self.config.user(author).private.set(not priv)
 
-
     @commands.group(name="checkpointset", aliases=["cpset"])
-    @commands.is_owner()
+    @checks.admin_or_permissions(manage_messages=True)
     async def _checkpoint_params(self, ctx):
         """Paramètres Checkpoint"""
 
+
+    @commands.group(name="autostream")
+    async def _checkpoint_autostream(self, ctx):
+        """Réglages des salons d'autostream"""
+
+    @_checkpoint_autostream.command(name="add")
+    async def autostream_add(self, ctx, channel: discord.VoiceChannel = None, *basename):
+        """Ajoute un salon vocal qui sera renommé automatiquement pour les streams
+
+        Le nom du salon s'adaptera automatiquement au nom du jeu joué
+        Préciser *basename* permet de définir un nom de "base" qui sera remis entre chaque stream et depuis lequel sera ajouté le nom du jeu"""
+        guild = ctx.guild
+        basename = " ".join(basename) if basename else channel.name
+        chans = await self.config.guild(guild).autostream_channels()
+        if channel:
+            if channel.id not in chans:
+                chans[channel.id] = basename
+                await self.config.guild(guild).autostream_channels.set(chans)
+                await ctx.send(f"**Salon vocal ajouté** • Le nom du salon sera automatiquement adapté en fonction du nom du jeu streamé")
+            else:
+                await ctx.send("**Déjà présent** • Ce salon est déjà présent, si vous voulez le retirer utilisez `;cpset autostream remove`")
+        elif chans:
+            txt = ""
+            for c in chans:
+                vc = guild.get_channel(c)
+                bn = chans[c]
+                txt += f"{vc.mention} (*{bn}*)\n"
+            em = discord.Embed(title="Salons adaptés automatiquement", description=txt)
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(
+                "**Aucun salon** • Aucun salon n'utilise cette fonctionnalité, si vous voulez en ajouter un utilisez `;cpset autostream add`")
+
+    @_checkpoint_autostream.command(name="remove")
+    async def autostream_remove(self, ctx, channel: discord.VoiceChannel = None):
+        """Retire un salon vocal de la fonction autostream (renommage auto. du salon pendant le stream)"""
+        guild = ctx.guild
+        chans = await self.config.guild(guild).autostream_channels()
+        if channel:
+            if channel.id in chans:
+                del chans[channel.id]
+                await self.config.guild(guild).autostream_channels.set(chans)
+                await ctx.send(
+                    f"**Salon vocal retiré** • Le salon ne sera plus adapté au stream.")
+            else:
+                await ctx.send(
+                    "**Non présent** • Ce salon n'est pas dans la liste, si vous voulez l'ajouter utilisez `;cpset autostream add`")
+        elif chans:
+            txt = ""
+            for c in chans:
+                vc = guild.get_channel(c)
+                bn = chans[c]
+                txt += f"{vc.mention} (*{bn}*)\n"
+            em = discord.Embed(title="Salons adaptés automatiquement", description=txt)
+            await ctx.send(embed=em)
+        else:
+            await ctx.send(
+                "**Aucun salon** • Aucun salon n'utilise cette fonctionnalité, si vous voulez en ajouter un utilisez `;cpset autostream add`")
+
+
     @_checkpoint_params.command()
+    @commands.is_owner()
     async def exclude(self, ctx, key: str):
         """Exclue un jeu de la liste des jeux vérifiés"""
         games = await self.config.Games()
@@ -551,6 +611,7 @@ class Checkpoint(commands.Cog):
             await ctx.send("**Erreur** • Identifiant de jeu inconnu")
 
     @_checkpoint_params.command()
+    @commands.is_owner()
     async def sensib(self, ctx, sens: int):
         """Change la sensibilité qui délimite les vrais jeux des faux
 
@@ -562,6 +623,7 @@ class Checkpoint(commands.Cog):
             await ctx.send(f"**Invalide** • La sensibilité doit être supérieure à 1")
 
     @_checkpoint_params.command()
+    @commands.is_owner()
     async def deldetect(self, ctx, key: str):
         """Supprime les données d'un jeu"""
         games = await self.config.Games()
@@ -574,6 +636,7 @@ class Checkpoint(commands.Cog):
             await ctx.send(f"**Invalide** • Cet ID est introuvable")
 
     @_checkpoint_params.command()
+    @commands.is_owner()
     async def delstarting(self, ctx, namestart: str):
         """Supprime les données de tous les 'jeux' commençant par..."""
         games = await self.config.Games()
@@ -585,6 +648,7 @@ class Checkpoint(commands.Cog):
         await ctx.send(f"**Succès** • Les données de ces jeux ont été supprimées")
 
     @_checkpoint_params.command()
+    @commands.is_owner()
     async def resetdetect(self, ctx, key: str):
         """Retire un jeu de tous les membres s'il a été détecté chez lui"""
         games = await self.config.Games()
@@ -603,6 +667,7 @@ class Checkpoint(commands.Cog):
             await ctx.send(f"**Invalide** • Cet ID est introuvable")
 
     @_checkpoint_params.command(name="link")
+    @commands.is_owner()
     async def link_games(self, ctx, basekey: str, *to_link):
         """Lie plusieurs jeux entre eux pour qu'ils ne soient considérés comme qu'un"""
         games = await self.config.Games()
@@ -642,3 +707,21 @@ class Checkpoint(commands.Cog):
                 await ctx.send(f"**Succès** • Les données des jeux sélectionnés ont été transférés sur le jeu de base")
         else:
             await ctx.send(f"**Invalide** • Cet ID de jeu est introuvable")
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, user, before, after):
+        if user.guild:
+            if before.self_stream > after.self_stream:
+                channel = after.channel
+                if channel.id in await self.config.guild(user.guild).autostream_channels():
+                    basename = await self.config.guild(user.guild).autostream_channels.get_raw(channel.id)
+                    if channel.name != basename:
+                        await channel.edit(name=basename, reason="Reset automatique du salon")
+            elif before.self_stream < after.self_stream:
+                channel = after.channel
+                if channel.id in await self.config.guild(user.guild).autostream_channels():
+                    playing = [c for c in user.activities if c.type == discord.ActivityType.playing]
+                    if playing:
+                        game = playing[0]
+                        basename = await self.config.guild(user.guild).autostream_channels.get_raw(channel.id)
+                        await channel.edit(name=basename + f" · {game.name.strip()}", reason="Adaptation automatique du salon au jeu streamé")
