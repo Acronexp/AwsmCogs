@@ -533,7 +533,7 @@ class Checkpoint(commands.Cog):
         """Paramètres Checkpoint"""
 
 
-    @commands.group(name="autostream")
+    @_checkpoint_params.group(name="autostream")
     async def _checkpoint_autostream(self, ctx):
         """Réglages des salons d'autostream"""
 
