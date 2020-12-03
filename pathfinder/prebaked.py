@@ -71,5 +71,12 @@ PREBAKED_ANSWERS = {
                "C'est une pensée bien trop matérialiste pour moi. Je ne sais pas s'il existe."),
          "ctx_in": ["random", "phi"],
          "ctx_out": ["random", "phi"]},
+
+        {"q": ("t'en penses quoi de dotack", "tu penses quoi de dotack"),
+         "a": ("Je n'ai pas hâte de le rencontrer...",
+               "D'après ce que j'ai en mémoire, je ne sais pas quoi en penser.",
+               "C'est une question difficile, je préfère ne pas y répondre pour ne pas froisser le concerné."),
+         "ctx_in": ["random", "advice"],
+         "ctx_out": ["random", "advice"]},
     )
 }
