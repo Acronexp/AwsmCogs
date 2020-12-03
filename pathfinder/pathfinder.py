@@ -45,7 +45,7 @@ class Pathfinder(commands.Cog):
         for pack in PREBAKED_ANSWERS:
             if pack in to_load:
                 for q in PREBAKED_ANSWERS[pack]:
-                    questions = questions + list(PREBAKED_ANSWERS[pack][q]["q"])
+                    questions = questions + list(q["q"])
         cache = self.get_cache(guild)
         cache["qts"] = questions
         return cache["qts"]
@@ -55,8 +55,8 @@ class Pathfinder(commands.Cog):
         for pack in PREBAKED_ANSWERS:
             if pack in to_load:
                 for q in PREBAKED_ANSWERS[pack]:
-                    if question in PREBAKED_ANSWERS[pack][q]["q"]:
-                        return PREBAKED_ANSWERS[pack][q]
+                    if question in q["q"]:
+                        return q
         return None
 
     async def match_query(self, guild: discord.Guild, query: str):
