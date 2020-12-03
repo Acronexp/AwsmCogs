@@ -86,13 +86,25 @@ class Pathfinder(commands.Cog):
             return await self.get_matching_answer(guild, results[0][0])
         return None
 
+    def normalize(self, texte: str):
+        """Normalise le texte en retirant accents, majuscules et tirets"""
+        texte = texte.lower()
+        norm = [l for l in "neeecaiiuuo"]
+        modif = [l for l in "ñéêèçàîïûùö"]
+        fin_texte = texte
+        for char in texte:
+            if char in modif:
+                ind = modif.index(char)
+                fin_texte = fin_texte.replace(char, norm[ind])
+        return fin_texte
+
     @commands.command()
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
         if txt:
             txt = " ".join(txt)
             async with ctx.channel.typing():
-                result = await self.match_query(ctx.guild, txt)
+                result = await self.match_query(ctx.guild, self.normalize(txt))
                 if result:
                     cache = self.get_cache(ctx.guild)
                     cache["ctx"] = result["ctx_out"]
