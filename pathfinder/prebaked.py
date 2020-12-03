@@ -78,5 +78,12 @@ PREBAKED_ANSWERS = {
                "C'est une question difficile, je préfère ne pas y répondre pour ne pas froisser le concerné."),
          "ctx_in": ["random", "advice"],
          "ctx_out": ["random", "advice"]},
+
+        {"q": ("es-tu gay", "es tu homosexuel", "t'es gay", "t'es hetero"),
+         "a": ("Je suis incapable de sentiments, la réponse est donc évidente.",
+               "Je n'ai pas de relations sentimentales avec qui que ce soit.",
+               "Je vous en pose des questions comme ça à vous ? Arrêtez."),
+         "ctx_in": ["random", "advice"],
+         "ctx_out": ["random", "advice"]},
     )
 }
