@@ -68,7 +68,7 @@ PREBAKED_ANSWERS = {
         {"q": ("est-ce que le pere noel existe", "le pere noel existe-t-il"),
          "a": ("Je ne sais pas mais en tout cas je n'ai pas eu l'occasion de le rencontrer.",
                "Peut-être bien, si c'est le cas il faudrait réfléchir à qui cela profite.",
-               ""),
+               "C'est une pensée bien trop matérialiste pour moi. Je ne sais pas s'il existe."),
          "ctx_in": ["random", "phi"],
          "ctx_out": ["random", "phi"]},
     )
