@@ -91,13 +91,23 @@ class Pathfinder(commands.Cog):
         """Parle avec le bot"""
         if txt:
             txt = " ".join(txt)
-            result = await self.match_query(ctx.guild, txt)
-            cache = self.get_cache(ctx.guild)
-            cache["ctx"] = result["ctx_out"]
-            rep = random.choice(result["a"])
-
-            bot = self.bot.user
-            ans = rep.format(bot=bot)
-            await ctx.send(ans)
+            async with ctx.channel.typing():
+                result = await self.match_query(ctx.guild, txt)
+                if result:
+                    cache = self.get_cache(ctx.guild)
+                    cache["ctx"] = result["ctx_out"]
+                    rep = random.choice(result["a"])
+                else:
+                    rep = random.choice([
+                        "Je n'ai pas compris la question, désolé.",
+                        "Je ne sais pas répondre à ça.",
+                        "Je ne sais pas de quoi vous parlez.",
+                        "... Pardon ?",
+                        "Je... je ne sais pas.",
+                        "Je n'ai aucune réponse à vous donner."
+                    ])
+                bot = self.bot.user
+                ans = rep.format(bot=bot)
+                await ctx.send(ans)
         else:
             await ctx.send("???")
