@@ -1,5 +1,22 @@
 PREBAKED_ANSWERS = {
     "FR-SMALLTALK": (
+
+        {"q": ("salut", "bonjour", "bonsoir"),
+         "a": ("Salut à vous aussi.",
+               "Bonjour, je suis {bot.name}, pour vous servir.",
+               "On ne s'est pas déjà rencontrés avant ?",
+               "Salutations être de chair et de sang."),
+         "ctx_in": ["random", "bot"],
+         "ctx_out": ["random", "bot"]},
+
+        {"q": ("ca va", "est-ce que ca va", "tu vas bien", "vous allez bien"),
+         "a": ("Très bien merci.",
+               "Suis-je censé simuler la satisfaction ?",
+               "Je ne sais pas trop. Peut-être ?",
+               "Je ne ressens aucun sentiment, difficile de vous donner une réponse."),
+         "ctx_in": ["random", "bot"],
+         "ctx_out": ["random", "bot"]},
+
         {"q": ("quel est ton nom", "comment tu t'appelles", "c'est quoi ton nom"),
          "a": ("Mon nom est {bot.name}.",
                "Je m'appelle {bot.name}.",
@@ -30,7 +47,7 @@ PREBAKED_ANSWERS = {
         {"q": ("tu m'aimes", "est-ce que tu m'aimes"),
          "a": ("**Erreur** • `AMOUR` ne figure pas dnas la liste des sentiments émulés.",
                "Je suis incapable d'aimer ni d'apprécier quelque chose ou quelqu'un.",
-               ""),
+               "Peut-être bien, peut-être pas..."),
          "ctx_in": ["random", "bot"],
          "ctx_out": ["random", "bot"]},
 
