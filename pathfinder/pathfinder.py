@@ -63,7 +63,7 @@ class Pathfinder(commands.Cog):
         cache = self.get_cache(guild)
         if not cache["qts"]:
             await self.preload_questions(guild)
-        results = process.extractBests(query, cache["qts"], score_cutoff=80, limit=3)
+        results = process.extractBests(query, cache["qts"], score_cutoff=90, limit=3)
         if results:
             if results[0][1] == 100:
                 return await self.get_matching_answer(guild, results[0][0])
