@@ -98,7 +98,7 @@ class Pathfinder(commands.Cog):
                 fin_texte = fin_texte.replace(char, norm[ind])
         return fin_texte
 
-    @commands.command()
+    @commands.command(aliases=["parle"])
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
         if txt:
