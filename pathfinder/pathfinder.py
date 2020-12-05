@@ -151,12 +151,13 @@ class Pathfinder(commands.Cog):
                 bot = self.bot.user
                 ans = rep.format(bot=bot)
                 await channel.send(ans)
-                if result.get("exe", False):
-                    com = random.choice(result["exe"]).strip()
-                    prefix = await self.get_prefix(msg)
-                    newmsg = copy(msg)
-                    newmsg.content = f"{prefix}{com}"
-                    await self.bot.process_commands(newmsg)
+                if result:
+                    if result.get("exe", False):
+                        com = random.choice(result["exe"]).strip()
+                        prefix = await self.get_prefix(msg)
+                        newmsg = copy(msg)
+                        newmsg.content = f"{prefix}{com}"
+                        await self.bot.process_commands(newmsg)
         else:
             resp = random.choice(["Que puis-je faire pour vous ?", "Oui ?", "Vous m'avez appelé ?", "???",
                                   "Que voulez-vous ?"])
