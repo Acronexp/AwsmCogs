@@ -193,17 +193,17 @@ class Pathfinder(commands.Cog):
             empty["a"] = tuple([i.strip().replace("\\n", "\n") for i in struc[1].split("|")])
 
             if len(struc) > 2:
-                reg = re.compile(r"(&[ioe])\s?([\w\s\|]+)", re.DOTALL | re.IGNORECASE).findall(string)
+                reg = re.compile(r"(&[ioe])\s?([\w\s|]+)", re.DOTALL | re.IGNORECASE).findall(string)
                 if reg:
                     for balise, contenu in reg:
-                        contenu = contenu.strip().split("|")
+                        contenu = contenu.split("|")
                         if contenu:
                             if balise == "&i":
-                                empty["ctx_in"] = contenu
+                                empty["ctx_in"] = [i.strip() for i in contenu]
                             elif balise == "&o":
-                                empty["ctx_out"] = contenu
+                                empty["ctx_out"] = [i.strip() for i in contenu]
                             elif balise == "&e" and not [i for i in contenu if i.startswith("talkset")]:
-                                empty["exe"] = contenu
+                                empty["exe"] = [i.strip() for i in contenu]
             if empty["q"] and empty["a"]:
                 return empty
         return {}
