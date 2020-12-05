@@ -152,19 +152,19 @@ class Pathfinder(commands.Cog):
         if "=>" in dlg:
             struc = re.split("=>|&[io]", string)
             struc[0] = self.normalize(struc[0])
-            empty["q"] = (i.strip() for i in struc[0].split("|"))
-            empty["a"] = (i.strip() for i in struc[1].split("|"))
+            empty["q"] = tuple([i.strip() for i in struc[0].split("|")])
+            empty["a"] = tuple([i.strip() for i in struc[1].split("|")])
             if len(struc) == 3 and "&i" in dlg:
-                empty["ctx_in"] = (i.strip() for i in struc[2].split("|"))
+                empty["ctx_in"] =  [i.strip() for i in struc[2].split("|")]
             elif len(struc) == 3 and "&o" in dlg:
-                empty["ctx_out"] = (i.strip() for i in struc[2].split("|"))
+                empty["ctx_out"] =  [i.strip() for i in struc[2].split("|")]
             elif all([len(struc) == 4, "&o" in dlg,"&i" in dlg]):
                 if dlg.index("&i") <  dlg.index("&o"):
-                    empty["ctx_in"] = (i.strip() for i in struc[2].split("|"))
-                    empty["ctx_out"] = (i.strip() for i in struc[3].split("|"))
+                    empty["ctx_in"] = [i.strip() for i in struc[2].split("|")]
+                    empty["ctx_out"] = [i.strip() for i in struc[3].split("|")]
                 else:
-                    empty["ctx_in"] = (i.strip() for i in struc[3].split("|"))
-                    empty["ctx_out"] = (i.strip() for i in struc[2].split("|"))
+                    empty["ctx_in"] = [i.strip() for i in struc[3].split("|")]
+                    empty["ctx_out"] = [i.strip() for i in struc[2].split("|")]
 
             if empty["q"] and empty["a"]:
                 return empty
