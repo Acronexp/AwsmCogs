@@ -1,21 +1,16 @@
 import asyncio
 import logging
-import operator
 import os
-from copy import deepcopy
+from copy import copy
 
 import discord
 import random
 import re
-import string
-from datetime import datetime
-from typing import List
 
 from fuzzywuzzy import process, fuzz
 from redbot.core import Config, checks, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.menus import start_adding_reactions
-from tabulate import tabulate
 
 from .prebaked import *
 
@@ -112,6 +107,15 @@ class Pathfinder(commands.Cog):
             return await self.get_matching_dialogue(guild, results[0][0])
         return None
 
+    async def get_prefix(self, message: discord.Message) -> str:
+        content = message.content
+        prefix_list = await self.bot.command_prefix(self.bot, message)
+        prefixes = sorted(prefix_list, key=lambda pfx: len(pfx), reverse=True)
+        for p in prefixes:
+            if content.startswith(p):
+                return p
+        raise ValueError("Aucun prefixe trouvé.")
+
     def normalize(self, texte: str):
         """Normalise le texte en retirant accents, majuscules et tirets"""
         texte = texte.lower()
@@ -124,7 +128,8 @@ class Pathfinder(commands.Cog):
                 fin_texte = fin_texte.replace(char, norm[ind])
         return fin_texte
 
-    async def answer_diag(self, channel: discord.TextChannel, txt = None):
+    async def answer_diag(self, msg: discord.Message, txt = None):
+        channel = msg.channel
         if txt:
             txt = " ".join(txt)
             async with channel.typing():
@@ -146,6 +151,12 @@ class Pathfinder(commands.Cog):
                 bot = self.bot.user
                 ans = rep.format(bot=bot)
                 await channel.send(ans)
+                if result["exe"]:
+                    com = random.choice(result["exe"]).strip()
+                    prefix = await self.get_prefix(msg)
+                    newmsg = copy(msg)
+                    newmsg.content = f"{prefix}{com}"
+                    await self.bot.process_commands(newmsg)
         else:
             resp = random.choice(["Que puis-je faire pour vous ?", "Oui ?", "Vous m'avez appelé ?", "???",
                                   "Que voulez-vous ?"])
@@ -155,7 +166,8 @@ class Pathfinder(commands.Cog):
     @commands.max_concurrency(3, commands.BucketType.guild)
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
-        await self.answer_diag(ctx.channel, txt)
+        if not ctx.author.bot:
+            await self.answer_diag(ctx.message, txt)
 
     @commands.group(name="talkset")
     @checks.admin_or_permissions(manage_messages=True)
@@ -167,24 +179,26 @@ class Pathfinder(commands.Cog):
         empty = {"q": None,
                  "a": None,
                  "ctx_in": [],
-                 "ctx_out": []}
+                 "ctx_out": [],
+                 "exe": []}
         if "=>" in dlg:
-            struc = re.split("=>|&[io]", string)
+            struc = re.split("=>|&[ioe]", string)
             struc[0] = self.normalize(struc[0])
             empty["q"] = tuple([i.strip() for i in struc[0].split("|")])
             empty["a"] = tuple([i.strip().replace("\\n", "\n") for i in struc[1].split("|")])
-            if len(struc) == 3 and "&i" in dlg:
-                empty["ctx_in"] =  [i.strip() for i in struc[2].split("|")]
-            elif len(struc) == 3 and "&o" in dlg:
-                empty["ctx_out"] =  [i.strip() for i in struc[2].split("|")]
-            elif all([len(struc) == 4, "&o" in dlg,"&i" in dlg]):
-                if dlg.index("&i") <  dlg.index("&o"):
-                    empty["ctx_in"] = [i.strip() for i in struc[2].split("|")]
-                    empty["ctx_out"] = [i.strip() for i in struc[3].split("|")]
-                else:
-                    empty["ctx_in"] = [i.strip() for i in struc[3].split("|")]
-                    empty["ctx_out"] = [i.strip() for i in struc[2].split("|")]
 
+            if len(struc) > 2:
+                reg = re.compile(r"(&[ioe])\s?([\w\s\|]+)", re.DOTALL | re.IGNORECASE).findall(string)
+                if reg:
+                    for balise, contenu in reg:
+                        contenu = contenu.strip().split("|")
+                        if contenu:
+                            if balise == "&i":
+                                empty["ctx_in"] = contenu
+                            elif balise == "&o":
+                                empty["ctx_out"] = contenu
+                            elif balise == "&e" and not [i for i in contenu if i.startswith("talkset")]:
+                                empty["exe"] = contenu
             if empty["q"] and empty["a"]:
                 return empty
         return {}
@@ -193,11 +207,15 @@ class Pathfinder(commands.Cog):
     async def add_dialogue(self, ctx, *dlg):
         """Ajouter un dialogue
 
-        - Les questions d'exemple ne doivent pas contenir de `?`
-        - Pour insérer des sauts de ligne : `\\n`
+        - Les questions d'exemple ne doivent pas contenir de `?`, n'ont pas besoin de majuscule ni de lettres accentuées
+        - Pour insérer des sauts de ligne utilisez `\\n`
+        - Balises optionnelles :
+           `&i` = Ajouter un contexte d'entrée (mot-clef permettant d'améliorer la pertinence des réponses)
+           `&o` = Ajouter un contexte de sortie
+           `&e` = Executer une/des commandes (s'il y en a plusieurs, en exécute une au hasard)
 
         **__Format :__**
-        `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN`
+        `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN &e commande1|commande2|commandeN`
 
         **Exemple simple :** `;talkset add quelle est la couleur du ciel => Le ciel est bleu`
 
@@ -322,4 +340,4 @@ class Pathfinder(commands.Cog):
                     if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
                         if await self.config.guild(message.guild).on_mention():
                             content = message.content.replace(f"@!{self.bot.user.id}", "")
-                            await self.answer_diag(message.channel, tuple(content.split()))
+                            await self.answer_diag(message, tuple(content.split()))

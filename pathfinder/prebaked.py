@@ -77,6 +77,13 @@ BASE_DIALOGUES = {
                "Je n'ai pas de relations sentimentales avec qui que ce soit.",
                "Je vous en pose des questions comme ça à vous ? Arrêtez."),
          "ctx_in": ["smalltalk", "info", "choice"],
-         "ctx_out": ["smalltalk", "info"]},
+         "ctx_out": ["smalltalk", "info"]}
+    ),
+
+    "FR-ACTION": (
+        {"q": ("comment ajouter des reponses", "personnaliser des reponses", "customiser des reponses", "modifier les dialogues"),
+         "a": ("Pour ajouter/retirer/lister mes dialogues, consultez `help talkset add/remove/list`.\nSuivez bien les instructions dans ces pages d'aide."),
+         "ctx_in": ["help"],
+         "ctx_out": ["help", "self"]},
     )
 }
