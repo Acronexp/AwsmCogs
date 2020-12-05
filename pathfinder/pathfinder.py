@@ -190,7 +190,9 @@ class Pathfinder(commands.Cog):
         **__Format :__**
         `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN`
 
-        **Exemple :** `;talkset add comment rejoindre un salon vocal|comment on rejoint le vocal => Cliquez sur le nom du salon vocal dans la liste à gauche &i help &o help|audio`"""
+        **Exemple simple :** `;talkset add quelle est la couleur du ciel => Le ciel est bleu`
+
+        **Exemple pro :** `;talkset add comment rejoindre un salon vocal|comment on rejoint le vocal => Cliquez sur le nom du salon vocal dans la liste à gauche &i help &o help|audio`"""
         guild = ctx.guild
         parsed = self.parse_dialogue(" ".join(dlg))
         if parsed:
