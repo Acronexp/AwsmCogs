@@ -157,9 +157,8 @@ class Pathfinder(commands.Cog):
                         com = random.choice(result["exe"]).strip()
                         prefix = await self.get_prefix(msg)
                         newmsg = copy(msg)
-                        newcont = f"{prefix}{com}"
-                        newcont = newcont.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
-                        newmsg.content = newcont
+                        com = com.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
+                        newmsg.content = f"{prefix}{com}"
                         await self.bot.process_commands(newmsg)
         else:
             resp = random.choice(["Que puis-je faire pour vous ?", "Oui ?", "Vous m'avez appelé ?", "???",
