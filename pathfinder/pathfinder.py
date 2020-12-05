@@ -148,8 +148,7 @@ class Pathfinder(commands.Cog):
                         "Je... je ne sais pas.",
                         "Je n'ai aucune réponse à vous donner."
                     ])
-                bot = self.bot.user
-                ans = rep.format(bot=bot)
+                ans = rep.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg, bot=self.bot.user)
                 await channel.send(ans)
 
                 if result:
@@ -157,7 +156,7 @@ class Pathfinder(commands.Cog):
                         com = random.choice(result["exe"]).strip()
                         prefix = await self.get_prefix(msg)
                         newmsg = copy(msg)
-                        com = com.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
+                        com = com.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg, bot=self.bot.user)
                         newmsg.content = prefix + com
                         logger.info("Commande = " + newmsg.content)
                         await self.bot.process_commands(newmsg)
