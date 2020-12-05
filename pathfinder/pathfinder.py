@@ -193,7 +193,7 @@ class Pathfinder(commands.Cog):
             empty["a"] = tuple([i.strip().replace("\\n", "\n") for i in struc[1].split("|")])
 
             if len(struc) > 2:
-                reg = re.compile(r"(&[ioe])\s?([\w\s|{}]+)", re.DOTALL | re.IGNORECASE).findall(string)
+                reg = re.compile(r"(&[ioe])\s?([\w\s|{}\.]+)", re.DOTALL | re.IGNORECASE).findall(string)
                 if reg:
                     for balise, contenu in reg:
                         contenu = contenu.split("|")
