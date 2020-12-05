@@ -82,6 +82,8 @@ class Pathfinder(commands.Cog):
             await self.preload_dialogues(guild)
 
         def match_scorer(search, choice):
+            if "?" in search:
+                choice += " ?"
             result = fuzz.token_sort_ratio(search, choice, force_ascii=False)
             if len(search) == len(choice):
                 result *= 1.1
@@ -320,4 +322,4 @@ class Pathfinder(commands.Cog):
                     if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
                         if await self.config.guild(message.guild).on_mention():
                             content = message.content.replace(f"<@!{self.bot.user.id}>", "")
-                            await self.answer_diag(message.channel, content.strip().split())
+                            await self.answer_diag(message.channel, content.split())
