@@ -64,11 +64,15 @@ class Pathfinder(commands.Cog):
 
     async def get_matching_dialogue(self, guild: discord.Guild, question: str):
         to_load = await self.config.guild(guild).load_packs()
+        custom = await self.config.guild(guild).custom()
         for pack in BASE_DIALOGUES:
             if pack in to_load:
                 for q in BASE_DIALOGUES[pack]:
                     if question in q["q"]:
                         return q
+        for q in custom:
+           if question in q["q"]:
+               return q
         return None
 
     async def match_query(self, guild: discord.Guild, query: str):
