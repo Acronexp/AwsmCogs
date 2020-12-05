@@ -158,7 +158,7 @@ class Pathfinder(commands.Cog):
                         prefix = await self.get_prefix(msg)
                         newmsg = copy(msg)
                         newcont = f"{prefix}{com}"
-                        newcont.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
+                        newcont = newcont.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
                         newmsg.content = newcont
                         await self.bot.process_commands(newmsg)
         else:
