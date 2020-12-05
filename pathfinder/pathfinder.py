@@ -163,7 +163,7 @@ class Pathfinder(commands.Cog):
             struc = re.split("=>|&[io]", string)
             struc[0] = self.normalize(struc[0])
             empty["q"] = tuple([i.strip() for i in struc[0].split("|")])
-            empty["a"] = tuple([i.strip() for i in struc[1].split("|")])
+            empty["a"] = tuple([i.strip().replace("\\n", "\n") for i in struc[1].split("|")])
             if len(struc) == 3 and "&i" in dlg:
                 empty["ctx_in"] =  [i.strip() for i in struc[2].split("|")]
             elif len(struc) == 3 and "&o" in dlg:
@@ -184,7 +184,8 @@ class Pathfinder(commands.Cog):
     async def add_dialogue(self, ctx, *dlg):
         """Ajouter un dialogue
 
-        Les questions d'exemple ne doivent pas contenir de `?`
+        - Les questions d'exemple ne doivent pas contenir de `?`
+        - Pour insérer des sauts de ligne : `\n`
 
         **__Format :__**
         `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN`
