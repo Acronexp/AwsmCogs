@@ -222,9 +222,9 @@ class Pathfinder(commands.Cog):
             custom = await self.config.guild(ctx.guild).custom()
             if result in custom:
                 em = discord.Embed(title="**Dialogue détecté** • Confirmez-vous sa suppression ?", color=discord.Color.red())
-                qtxt = "\n".join(("- " + q.title() for q in result["q"]))
+                qtxt = "\n".join(("- " + q for q in result["q"]))
                 em.add_field(name="Questions (normalisées)", value=qtxt)
-                atxt = "\n".join(("- " + q.title() for q in result["a"]))
+                atxt = "\n".join(("- " + q for q in result["a"]))
                 em.add_field(name="Réponses", value=atxt)
                 em.set_footer(text="Confirmez la suppression avec ✅, sinon ❌")
                 msg = await ctx.send(embed=em)
