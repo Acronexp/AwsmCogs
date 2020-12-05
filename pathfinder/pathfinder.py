@@ -30,7 +30,8 @@ class Pathfinder(commands.Cog):
         self.config = Config.get_conf(self, identifier=736144321857978388, force_registration=True)
 
         default_guild = {"custom": [],
-                         "load_packs": ["FR-SMALLTALK", "FR-ACTIONS"]}
+                         "load_packs": ["FR-SMALLTALK", "FR-ACTIONS"],
+                         "on_mention": False}
         default_user = {}
         self.config.register_guild(**default_guild)
         self.config.register_user(**default_user)
@@ -102,7 +103,7 @@ class Pathfinder(commands.Cog):
             return await self.get_matching_dialogue(guild, results[0][0])
         return None
 
-    def normalize(self, texte: str):
+    def normalize(self, ctx, texte: str):
         """Normalise le texte en retirant accents, majuscules et tirets"""
         texte = texte.lower()
         norm = [l for l in "neeecaiiuuo"]
@@ -114,17 +115,14 @@ class Pathfinder(commands.Cog):
                 fin_texte = fin_texte.replace(char, norm[ind])
         return fin_texte
 
-    @commands.command(aliases=["parle"])
-    @commands.max_concurrency(3, commands.BucketType.guild)
-    async def talk(self, ctx, *txt):
-        """Parle avec le bot"""
+    async def answer_diag(self, channel: discord.TextChannel, txt = None):
         if txt:
             txt = " ".join(txt)
-            async with ctx.channel.typing():
-                result = await self.match_query(ctx.guild, self.normalize(txt))
+            async with channel.typing():
+                result = await self.match_query(channel.guild, self.normalize(txt))
                 await asyncio.sleep(0.5) # Ce délai c'est pour éviter le bug de l'écriture qui persiste après le message
                 if result:
-                    cache = self.get_cache(ctx.guild)
+                    cache = self.get_cache(channel.guild)
                     cache["ctx"] = result["ctx_out"]
                     rep = random.choice(result["a"])
                 else:
@@ -138,9 +136,17 @@ class Pathfinder(commands.Cog):
                     ])
                 bot = self.bot.user
                 ans = rep.format(bot=bot)
-                await ctx.send(ans)
+                await channel.send(ans)
         else:
-            await ctx.send("???")
+            resp = random.choice(["Que puis-je faire pour vous ?", "Oui ?", "Vous m'avez appelé ?", "???",
+                                  "Que voulez-vous ?"])
+            await channel.send(resp)
+
+    @commands.command(aliases=["parle"])
+    @commands.max_concurrency(3, commands.BucketType.guild)
+    async def talk(self, ctx, *txt):
+        """Parle avec le bot"""
+        await self.answer_diag(ctx.channel, txt)
 
     @commands.group(name="talkset")
     @checks.admin_or_permissions(manage_messages=True)
@@ -283,3 +289,24 @@ class Pathfinder(commands.Cog):
                 await ctx.send("**Erreur** • Je n'ai pas réussi à upload le fichier...")
         else:
             await ctx.send("**Liste vide** • Aucun dialogue n'est à afficher")
+
+    @_pathfinder_talk.command(name="mention")
+    async def talk_on_mention(self, ctx):
+        """Activer/désactiver la réponse lors de la mention du bot"""
+        guild = ctx.guild
+        mention = await self.config.guild(guild).on_mention()
+        if mention:
+            await ctx.send("**Désactivé** • Le bot ne répondra plus lors de sa mention.")
+        else:
+            await ctx.send(
+                "**Activé** • Le bot répondra à ses mentions.")
+        await self.config.guild(guild).on_mention.set(mention)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.guild:
+            if message.mentions:
+                if self.bot.user in message.mentions:
+                    if await self.config.guild(message.guild).on_mention():
+                        content = message.clean_content.replace(f"<@{self.bot.user.id}>", "")
+                        await self.answer_diag(message.channel, content)
