@@ -76,7 +76,7 @@ class Pathfinder(commands.Cog):
                return q
         return None
 
-    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 89):
+    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 87):
         cache = self.get_cache(guild)
         if not cache["qts"]:
             await self.preload_dialogues(guild)
@@ -127,6 +127,7 @@ class Pathfinder(commands.Cog):
             txt = " ".join(txt)
             async with channel.typing():
                 result = await self.match_query(channel.guild, self.normalize(txt))
+                await asyncio.sleep(0.1)
                 if result:
                     cache = self.get_cache(channel.guild)
                     cache["ctx"] = result["ctx_out"]
@@ -315,7 +316,8 @@ class Pathfinder(commands.Cog):
     async def on_message(self, message):
         if message.guild:
             if message.mentions:
-                if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
-                    if await self.config.guild(message.guild).on_mention():
-                        content = message.clean_content.replace(f"<@{self.bot.user.id}>", "")
-                        await self.answer_diag(message.channel, content.strip().split())
+                if not message.author.bot:
+                    if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
+                        if await self.config.guild(message.guild).on_mention():
+                            content = message.content.replace(f"<@!{self.bot.user.id}>", "")
+                            await self.answer_diag(message.channel, content.strip().split())
