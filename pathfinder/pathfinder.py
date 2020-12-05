@@ -83,8 +83,8 @@ class Pathfinder(commands.Cog):
 
         def match_scorer(search, choice):
             if "?" in search:
-                choice += " ?"
-            result = fuzz.token_sort_ratio(search, choice, force_ascii=False)
+                search = search.replace("?", "")
+            result = fuzz.token_sort_ratio(search, self.normalize(choice), force_ascii=False)
             if len(search) == len(choice):
                 result *= 1.1
             return result
