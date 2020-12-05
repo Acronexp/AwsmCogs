@@ -75,11 +75,11 @@ class Pathfinder(commands.Cog):
                return q
         return None
 
-    async def match_query(self, guild: discord.Guild, query: str):
+    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 89):
         cache = self.get_cache(guild)
         if not cache["qts"]:
             await self.preload_dialogues(guild)
-        results = process.extractBests(query, cache["qts"], score_cutoff=89, limit=3)
+        results = process.extractBests(query, cache["qts"], score_cutoff=cutoff, limit=3)
         if results:
             if results[0][1] == 100:
                 return await self.get_matching_dialogue(guild, results[0][0])
@@ -187,15 +187,20 @@ class Pathfinder(commands.Cog):
         guild = ctx.guild
         parsed = self.parse_dialogue(" ".join(dlg))
         if parsed:
-            custom = await self.config.guild(guild).custom()
-            if parsed not in custom:
-                custom.append(parsed)
-                await self.config.guild(guild).custom.set(custom)
-                await self.preload_dialogues(guild)
-                await ctx.send("**Dialogue ajouté** • Le bot réagira désormais à vos questions-exemples en répondant avec les réponses pré-enregistrées.")
+            result = await self.match_query(ctx.guild, self.normalize(parsed["q"][0]), cutoff=95)
+            if not result:
+                custom = await self.config.guild(guild).custom()
+                if parsed not in custom:
+                    custom.append(parsed)
+                    await self.config.guild(guild).custom.set(custom)
+                    await self.preload_dialogues(guild)
+                    await ctx.send("**Dialogue ajouté** • Le bot réagira désormais à vos questions-exemples en répondant avec les réponses pré-enregistrées.")
+                else:
+                    await ctx.send(
+                        "**Dialogue déjà présent** • Un dialogue identique se trouve déjà dans ma base de données.")
             else:
                 await ctx.send(
-                    "**Dialogue déjà présent** • Un dialogue identique se trouve déjà dans ma base de données.")
+                    "**Dialogue proche déjà utilisé** • Utilisez une formulation différente ou supprimez l'ancien dialogue avec `;talkset remove`.")
         else:
             await ctx.send(
                 "**Dialogue refusé** • Le format semble invalide, consultez `;help talkset add`.")
