@@ -11,7 +11,7 @@ import string
 from datetime import datetime
 from typing import List
 
-from fuzzywuzzy import process
+from fuzzywuzzy import process, fuzz
 from redbot.core import Config, checks, commands
 from redbot.core.data_manager import cog_data_path
 from redbot.core.utils.menus import start_adding_reactions
@@ -76,11 +76,18 @@ class Pathfinder(commands.Cog):
                return q
         return None
 
-    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 85):
+    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 89):
         cache = self.get_cache(guild)
         if not cache["qts"]:
             await self.preload_dialogues(guild)
-        results = process.extractBests(query, cache["qts"], score_cutoff=cutoff, limit=3)
+
+        def match_scorer(search, choice):
+            result = fuzz.token_sort_ratio(search, choice, force_ascii=False)
+            if len(search) == len(choice):
+                result *= 1.1
+            return result
+
+        results = process.extractBests(query, cache["qts"], score_cutoff=cutoff, limit=3, scorer=match_scorer)
         if results:
             if results[0][1] == 100:
                 return await self.get_matching_dialogue(guild, results[0][0])
@@ -120,7 +127,6 @@ class Pathfinder(commands.Cog):
             txt = " ".join(txt)
             async with channel.typing():
                 result = await self.match_query(channel.guild, self.normalize(txt))
-                await asyncio.sleep(0.5) # Ce délai c'est pour éviter le bug de l'écriture qui persiste après le message
                 if result:
                     cache = self.get_cache(channel.guild)
                     cache["ctx"] = result["ctx_out"]
@@ -196,7 +202,7 @@ class Pathfinder(commands.Cog):
         guild = ctx.guild
         parsed = self.parse_dialogue(" ".join(dlg))
         if parsed:
-            result = await self.match_query(ctx.guild, self.normalize(parsed["q"][0]), cutoff=90)
+            result = await self.match_query(ctx.guild, self.normalize(parsed["q"][0]))
             if not result:
                 custom = await self.config.guild(guild).custom()
                 if parsed not in custom:
