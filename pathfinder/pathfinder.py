@@ -111,13 +111,14 @@ class Pathfinder(commands.Cog):
         return fin_texte
 
     @commands.command(aliases=["parle"])
+    @commands.max_concurrency(3, commands.BucketType.channel)
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
         if txt:
             txt = " ".join(txt)
             async with ctx.channel.typing():
                 result = await self.match_query(ctx.guild, self.normalize(txt))
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.5) # Ce délai c'est pour éviter le bug de l'écriture qui persiste après le message
                 if result:
                     cache = self.get_cache(ctx.guild)
                     cache["ctx"] = result["ctx_out"]
