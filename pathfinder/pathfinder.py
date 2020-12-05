@@ -76,7 +76,7 @@ class Pathfinder(commands.Cog):
                return q
         return None
 
-    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 89):
+    async def match_query(self, guild: discord.Guild, query: str, cutoff: int = 85):
         cache = self.get_cache(guild)
         if not cache["qts"]:
             await self.preload_dialogues(guild)
