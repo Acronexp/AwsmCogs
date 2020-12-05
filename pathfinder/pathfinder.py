@@ -306,7 +306,7 @@ class Pathfinder(commands.Cog):
     async def on_message(self, message):
         if message.guild:
             if message.mentions:
-                if self.bot.user in message.mentions:
+                if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
                     if await self.config.guild(message.guild).on_mention():
                         content = message.clean_content.replace(f"<@{self.bot.user.id}>", "")
                         await self.answer_diag(message.channel, content)
