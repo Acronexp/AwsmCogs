@@ -151,7 +151,7 @@ class Pathfinder(commands.Cog):
                 bot = self.bot.user
                 ans = rep.format(bot=bot)
                 await channel.send(ans)
-                if result["exe"]:
+                if result.get("exe", False):
                     com = random.choice(result["exe"]).strip()
                     prefix = await self.get_prefix(msg)
                     newmsg = copy(msg)
