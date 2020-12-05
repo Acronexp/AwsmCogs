@@ -159,6 +159,7 @@ class Pathfinder(commands.Cog):
                         newmsg = copy(msg)
                         com = com.format(author=msg.author, guild=msg.guild, channel=msg.channel, message=msg)
                         newmsg.content = f"{prefix}{com}"
+                        logger.info("Commande = " + newmsg.content)
                         await self.bot.process_commands(newmsg)
         else:
             resp = random.choice(["Que puis-je faire pour vous ?", "Oui ?", "Vous m'avez appelé ?", "???",
