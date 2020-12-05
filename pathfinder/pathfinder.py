@@ -156,7 +156,6 @@ class Pathfinder(commands.Cog):
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
         await self.answer_diag(ctx.channel, txt)
-        print("direct: " + repr(txt))
 
     @commands.group(name="talkset")
     @checks.admin_or_permissions(manage_messages=True)
@@ -322,6 +321,5 @@ class Pathfinder(commands.Cog):
                 if not message.author.bot:
                     if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
                         if await self.config.guild(message.guild).on_mention():
-                            content = message.content.replace(f"<@!{self.bot.user.id}>", "")
-                            await self.answer_diag(message.channel, content.split())
-                            print("mention: " + repr(content.split()))
+                            content = message.content.replace(f"@!{self.bot.user.id}", "")
+                            await self.answer_diag(message.channel, tuple(content.split()))
