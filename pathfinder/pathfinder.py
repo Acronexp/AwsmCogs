@@ -185,7 +185,7 @@ class Pathfinder(commands.Cog):
         """Ajouter un dialogue
 
         - Les questions d'exemple ne doivent pas contenir de `?`
-        - Pour insérer des sauts de ligne : `\n`
+        - Pour insérer des sauts de ligne : `\\n`
 
         **__Format :__**
         `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN`
