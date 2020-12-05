@@ -169,6 +169,7 @@ class Pathfinder(commands.Cog):
         """Parle avec le bot"""
         if not ctx.author.bot:
             await self.answer_diag(ctx.message, txt)
+            logger.info(f"Commande = " + repr(txt))
 
     @commands.group(name="talkset")
     @checks.admin_or_permissions(manage_messages=True)
@@ -342,3 +343,4 @@ class Pathfinder(commands.Cog):
                         if await self.config.guild(message.guild).on_mention():
                             content = message.content.replace(f"@!{self.bot.user.id}", "")
                             await self.answer_diag(message, tuple(content.split()))
+                            logger.info(f"Mention = " + repr(tuple(content.split())))
