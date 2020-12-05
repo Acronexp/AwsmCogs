@@ -300,7 +300,7 @@ class Pathfinder(commands.Cog):
         else:
             await ctx.send(
                 "**Activé** • Le bot répondra à ses mentions.")
-        await self.config.guild(guild).on_mention.set(mention)
+        await self.config.guild(guild).on_mention.set(not mention)
 
     @commands.Cog.listener()
     async def on_message(self, message):
