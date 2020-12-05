@@ -344,6 +344,10 @@ class Pathfinder(commands.Cog):
                 if not message.author.bot:
                     if len(message.mentions) == 1 and message.mentions[0] == self.bot.user:
                         if await self.config.guild(message.guild).on_mention():
-                            content = message.content.replace(f"@!{self.bot.user.id}", "")
+                            content = message.content
+                            for m in message.content.split():
+                                if self.bot.user.id in m:
+                                    content = content.replace(m, "")
+                            content = content.strip()
                             await self.answer_diag(message, tuple(content.split()))
                             logger.info(f"Mention = " + repr(tuple(content.split())))
