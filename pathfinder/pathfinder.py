@@ -346,7 +346,7 @@ class Pathfinder(commands.Cog):
                         if await self.config.guild(message.guild).on_mention():
                             content = message.content
                             for m in message.content.split():
-                                if self.bot.user.id in m:
+                                if str(self.bot.user.id) in m:
                                     content = content.replace(m, "")
                             content = content.strip()
                             await self.answer_diag(message, tuple(content.split()))
