@@ -111,7 +111,7 @@ class Pathfinder(commands.Cog):
         return fin_texte
 
     @commands.command(aliases=["parle"])
-    @commands.max_concurrency(3, commands.BucketType.channel)
+    @commands.max_concurrency(3, commands.BucketType.guild)
     async def talk(self, ctx, *txt):
         """Parle avec le bot"""
         if txt:
