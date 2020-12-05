@@ -114,7 +114,7 @@ class Pathfinder(commands.Cog):
         for p in prefixes:
             if content.startswith(p):
                 return p
-        raise ValueError("Aucun prefixe trouvé.")
+        return "n."
 
     def normalize(self, texte: str):
         """Normalise le texte en retirant accents, majuscules et tirets"""
