@@ -103,7 +103,7 @@ class Pathfinder(commands.Cog):
             return await self.get_matching_dialogue(guild, results[0][0])
         return None
 
-    def normalize(self, ctx, texte: str):
+    def normalize(self, texte: str):
         """Normalise le texte en retirant accents, majuscules et tirets"""
         texte = texte.lower()
         norm = [l for l in "neeecaiiuuo"]
