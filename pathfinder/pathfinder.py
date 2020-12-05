@@ -196,7 +196,7 @@ class Pathfinder(commands.Cog):
         guild = ctx.guild
         parsed = self.parse_dialogue(" ".join(dlg))
         if parsed:
-            result = await self.match_query(ctx.guild, self.normalize(parsed["q"][0]), cutoff=95)
+            result = await self.match_query(ctx.guild, self.normalize(parsed["q"][0]), cutoff=90)
             if not result:
                 custom = await self.config.guild(guild).custom()
                 if parsed not in custom:
