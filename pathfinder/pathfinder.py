@@ -177,7 +177,7 @@ class Pathfinder(commands.Cog):
         Les questions d'exemple ne doivent pas contenir de `?`
 
         **__Format :__**
-        `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN
+        `;talkset add phrase 1|phrase 2|phrase N => reponse 1|reponse 2|reponse N &i ctx1|ctx2|ctxN &o ctx1|ctx2|ctxN`
 
         **Exemple :** `;talkset add comment rejoindre un salon vocal|comment on rejoint le vocal => Cliquez sur le nom du salon vocal dans la liste à gauche &i help &o help|audio`"""
         guild = ctx.guild
