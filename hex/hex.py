@@ -169,7 +169,7 @@ class Hex(commands.Cog):
                 msg.content = prefix + com
                 return await self.bot.process_commands(msg)
 
-            async with ctx.channel.typing()
+            async with ctx.channel.typing():
                 if couleur.lower() == "auto":  # de façon à ce que faire ";color auto" soit équivalent à ";autocolor"
                     await exe("autocolor")
                 elif couleur.lower() in ("none", "remove", "rem"):  # idem avec ";remcolor"
