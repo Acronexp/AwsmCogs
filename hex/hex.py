@@ -78,6 +78,11 @@ class Hex(commands.Cog):
             await self.clear_cache_color(guild, color)
         return True
 
+    async def clear_multiple_colors(self, guild: discord.Guild, colors: list):
+        for color in colors:
+            await self.clear_color(guild, color)
+        return True
+
     async def cache_color(self, guild: discord.Guild, color: str):
         name = color.replace("0x", "#")
         if not name in await self.config.guild(guild).roles():
@@ -105,8 +110,8 @@ class Hex(commands.Cog):
             if col in all_colors:
                 role = discord_get(guild.roles, name=col)
                 delroles.append(role)
-                await self.clear_color(guild, col)
         await user.remove_roles(*delroles)
+        await self.clear_multiple_colors(guild, [r.name for r in delroles])
 
         role = await self.get_color(guild, color)
         await user.add_roles(role, reason="Changement de rôle coloré")
@@ -164,26 +169,27 @@ class Hex(commands.Cog):
                 msg.content = prefix + com
                 return await self.bot.process_commands(msg)
 
-            if couleur.lower() == "auto":  # de façon à ce que faire ";color auto" soit équivalent à ";autocolor"
-                await exe("autocolor")
-            elif couleur.lower() in ("none", "remove", "rem"):  # idem avec ";remcolor"
-                await exe("remcolor")
-            else:
-                if self.format_color(couleur):
-                    couleur = "0x" + self.format_color(couleur)
-                elif self.css_name_hex(couleur):
-                    couleur = self.css_name_hex(couleur)
+            async with ctx.channel.typing()
+                if couleur.lower() == "auto":  # de façon à ce que faire ";color auto" soit équivalent à ";autocolor"
+                    await exe("autocolor")
+                elif couleur.lower() in ("none", "remove", "rem"):  # idem avec ";remcolor"
+                    await exe("remcolor")
                 else:
-                    return await ctx.send("**Couleur invalide** • La couleur donnée n'est ni une couleur en "
-                                          "hexadécimal (ex. `#fefefe`) ni un nom de couleur sous la norme CSS3/HTML")
+                    if self.format_color(couleur):
+                        couleur = "0x" + self.format_color(couleur)
+                    elif self.css_name_hex(couleur):
+                        couleur = self.css_name_hex(couleur)
+                    else:
+                        return await ctx.send("**Couleur invalide** • La couleur donnée n'est ni une couleur en "
+                                              "hexadécimal (ex. `#fefefe`) ni un nom de couleur sous la norme CSS3/HTML")
 
-                role = await self.set_user_color(ctx.author, couleur)
-                if role:
-                    em = discord.Embed(description=f"Vous avez désormais la couleur **{role.name}**", color=role.color)
-                    em.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
-                    await ctx.send(embed=em)
-                else:
-                    await ctx.send("**Impossible** • Vous n'êtes pas autorisé à utiliser cette commande (Whitelist)")
+                    role = await self.set_user_color(ctx.author, couleur)
+                    if role:
+                        em = discord.Embed(description=f"Vous avez désormais la couleur **{role.name}**", color=role.color)
+                        em.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
+                        await ctx.send(embed=em)
+                    else:
+                        await ctx.send("**Impossible** • Vous n'êtes pas autorisé à utiliser cette commande (Whitelist)")
         else:
             all_roles = await self.config.guild(ctx.guild).roles()
             colors = []
