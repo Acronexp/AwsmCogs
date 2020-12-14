@@ -145,12 +145,14 @@ class Hex(commands.Cog):
 
     def format_color(self, color: str, prefixe: str = None):
         """Vérifie que la couleur donnée est un hexadécimal et renvoie la couleur avec ou sans préfixe (0x ou #)"""
-        color = color[-6:]
-        try:
-            int(color, base=16)
-            return color.upper() if not prefixe else prefixe + color.upper()
-        except ValueError:
-            return False
+        if len(color) >= 6:
+            color = color[-6:]
+            try:
+                int(color, base=16)
+                return color.upper() if not prefixe else prefixe + color.upper()
+            except ValueError:
+                return False
+        return False
 
     def css_name_hex(self, name: str):
         """Retrouve l'hex lié au nom de couleur (CSS3/HTML)"""
