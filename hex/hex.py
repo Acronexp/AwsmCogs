@@ -88,13 +88,13 @@ class Hex(commands.Cog):
                     return
             await role.delete(reason="Suppression auto. de rôle de couleur obsolète")
             await self.clear_cache_color(guild, color)
-        return True
+            return True
+        return False
 
     async def clear_multiple_colors(self, guild: discord.Guild, colors: list):
         await self.bot.wait_until_ready()
         for color in colors:
             await self.clear_color(guild, color)
-        return True
 
     async def cache_color(self, guild: discord.Guild, color: str):
         name = self.format_color(color, "#")
@@ -354,8 +354,8 @@ class Hex(commands.Cog):
         all_roles = await self.config.guild(guild).roles()
         count = 0
         for role in all_roles:
-            await self.clear_color(guild, all_roles[role])
-            count += 1
+            if await self.clear_color(guild, all_roles[role]):
+                count += 1
         await ctx.send(f"**Vérification terminée** • {count} rôles obsolètes ont été supprimés")
 
     @_color_settings.command(name="deleteall")
@@ -386,6 +386,19 @@ class Hex(commands.Cog):
                 await ctx.send(embed=em)
             else:
                 await ctx.send("**Erreur** • Impossible de lui donner cette couleur")
+
+    @_color_settings.command(name="quality")
+    async def autocolor_quality(self, ctx, val: int):
+        """Change la qualité (1-10) de chargement de l'image de profil pour déterminer la couleur dominante
+
+        1 = Meilleure qualité = meilleure précision mais plus lent
+        10 = Pire qualité = moins bonne précision mais plus rapide"""
+        guild = ctx.guild
+        if 1 <= val <= 10:
+            await self.config.guild(guild).autocolor_quality.set(val)
+            await ctx.send(f"**Valeur modifiée** • La détection de couleur suivra le paramètre de qualité **{val}**")
+        else:
+            await ctx.send("**Erreur** • La valeur doit être comprise entre 1 (meilleure qualité) et 10 (pire qualité)")
 
     @_color_settings.command(name="refresh")
     async def refresh_colors(self, ctx):
