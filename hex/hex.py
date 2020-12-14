@@ -112,6 +112,7 @@ class Hex(commands.Cog):
                     role = discord_get(guild.roles, name=col)
                     delroles.append(role)
             await user.remove_roles(*delroles)
+            await self.bot.wait_until_ready()
             await self.clear_multiple_colors(guild, [r.name for r in delroles])
 
             role = await self.get_color(guild, color)
@@ -275,6 +276,7 @@ class Hex(commands.Cog):
                 delroles.append(role)
         if delroles:
             await user.remove_roles(*delroles, reason="Retrait du/des rôle(s) sur demande du membre")
+            await self.bot.wait_until_ready()
             await self.clear_multiple_colors(guild, [i.name for i in delroles])
             await ctx.send("**Couleur(s) retirée(s)** • Vous n'avez plus aucun rôle coloré provenant du bot")
         else:
