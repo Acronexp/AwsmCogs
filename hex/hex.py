@@ -1,5 +1,5 @@
 # Merci à Maglatranir#7175 qui a réalisé toute la partie sur l'extraction de la couleur dominante de la photo de profil
-
+import asyncio
 import os
 from copy import copy
 import logging
@@ -171,11 +171,16 @@ class Hex(commands.Cog):
 
     @commands.command(name="color")
     @commands.guild_only()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True, mention_everyone=True)
     async def set_color(self, ctx, couleur: str = None):
-        """Changer manuellement votre rôle de couleur (format hexadécimal)
+        """Changer manuellement votre rôle de couleur (format hexadécimal ou nom CSS3/HTML)
 
-        Mettre "auto" à la place d'une couleur vous affecte la couleur dominante de votre avatar (v. ;autocolor)
+        **Options spéciales :**
+        "auto" = Détecte et applique la couleur dominante de votre photo de profil
+        "rem" = Supprime tous les rôles couleurs possédés
+        "random" = Applique une couleur aléatoire
+
         Affiche les couleurs déjà utilisées par d'autres membres du serveur si aucune couleur n'est donnée"""
         if couleur:
             async def exe(com: str):
@@ -243,6 +248,7 @@ class Hex(commands.Cog):
 
     @commands.command(name="autocolor")
     @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True)
     async def set_autocolor(self, ctx):
         """Détecte la couleur dominante de la photo de profil et applique le rôle coloré correspondant"""
@@ -279,6 +285,7 @@ class Hex(commands.Cog):
 
     @commands.command(name="remcolor", aliases=["removecolor"])
     @commands.guild_only()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True)
     async def remove_color(self, ctx):
         """Retire votre rôle coloré
@@ -296,8 +303,9 @@ class Hex(commands.Cog):
                     delroles.append(role)
             if delroles:
                 await user.remove_roles(*delroles, reason="Retrait du/des rôle(s) sur demande du membre")
-                await self.clear_multiple_colors(guild, [i.name for i in delroles])
                 await ctx.send("**Couleur(s) retirée(s)** • Vous n'avez plus aucun rôle coloré provenant du bot")
+                await asyncio.sleep(3) # Eviter les limitations Discord
+                await self.clear_multiple_colors(guild, [i.name for i in delroles])
             else:
                 await ctx.send("**Aucun rôle** • Aucun rôle coloré que vous possédez ne provient de ce bot")
 
