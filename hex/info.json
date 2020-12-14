@@ -5,7 +5,8 @@
 	"short": "Gestion des rôles colorés",
 	"tags": ["community", "roles", "color"],
 	"requirements" : [
-      "colorthief"
+		"colorthief",
+		"webcolors"
     ],
 	"type": "COG"
 }
