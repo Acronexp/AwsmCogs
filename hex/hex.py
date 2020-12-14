@@ -67,8 +67,9 @@ class Hex(commands.Cog):
 
     async def arrange_role(self, guild: discord.Guild, role: discord.Role):
         """Range le rôle sous le délimiteur"""
-        delim = await self.config.guild(guild).delimiter()
-        if delim and role in guild.roles:
+        deid = await self.config.guild(guild).delimiter()
+        if deid and role in guild.roles:
+            delim = guild.get_role(deid)
             if role.position < delim.position:
                 await role.edit(position=delim.position - 1)
             else:
@@ -473,4 +474,7 @@ class Hex(commands.Cog):
         """Affiche ce que contient le cache des rôles de couleur"""
         roles = await self.config.guild(ctx.guild).roles()
         txt = "\n".join([discord_get(ctx.guild.roles, name=r) for r in roles])
-        await ctx.send(txt)
+        if txt:
+            await ctx.send(txt)
+        else:
+            await ctx.send("**Cache vide**")
