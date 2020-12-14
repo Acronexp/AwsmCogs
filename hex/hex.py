@@ -3,6 +3,7 @@
 import os
 from copy import copy
 import logging
+import random
 import webcolors
 from colorthief import ColorThief
 
@@ -188,6 +189,10 @@ class Hex(commands.Cog):
                     await exe("autocolor")
                 elif couleur.lower() in ("none", "remove", "rem"):  # idem avec ";remcolor"
                     await exe("remcolor")
+                elif couleur.lower() == "random":
+                    r = lambda: random.randint(0, 255)
+                    rdn = '%02X%02X%02X' % (r(), r(), r())
+                    await exe(f"color {rdn}")
                 else:
                     if self.format_color(couleur):
                         couleur = self.format_color(couleur, "0x")
@@ -245,28 +250,31 @@ class Hex(commands.Cog):
         path = str(self.temp)
         filename = path + "/avatar_{}.jpg".format(member.id)
 
-        await member.avatar_url.save(filename)
-        color_thief = ColorThief(filename)
+        notif = await ctx.send("**Recherche de la couleur la plus proche de votre avatar...**")
+        async with ctx.channel.typing():
+            await member.avatar_url.save(filename)
+            color_thief = ColorThief(filename)
 
-        # Couleur dominante en tuple R V B
-        qual = await self.config.guild(ctx.guild).autocolor_quality()
-        dominant_color = color_thief.get_color(quality=qual)
+            # Couleur dominante en tuple R V B
+            qual = await self.config.guild(ctx.guild).autocolor_quality()
+            dominant_color = color_thief.get_color(quality=qual)
 
-        # Conversion R V B en hexa
-        def rgb2hex(color):
-            return f"#{''.join(f'{hex(c)[2:].upper():0>2}' for c in color)}"
+            # Conversion R V B en hexa
+            def rgb2hex(color):
+                return f"#{''.join(f'{hex(c)[2:].upper():0>2}' for c in color)}"
 
-        rolename = rgb2hex(dominant_color)
-        try:
-            newrole = await self.set_user_color(member, rolename)
-            if newrole:
-                em = discord.Embed(description=f"Vous avez désormais la couleur **{newrole.name}**", color=newrole.color)
-                em.set_author(name=str(member), icon_url=member.avatar_url)
-                await ctx.send(embed=em)
-            else:
-                await ctx.send(f"**Impossible** • Vous n'êtes pas autorisé à utiliser cette commande (Whitelist)")
-        except Exception as e:
-            await ctx.send(f"**Erreur** • {e}")
+            rolename = rgb2hex(dominant_color)
+            try:
+                newrole = await self.set_user_color(member, rolename)
+                await notif.delete()
+                if newrole:
+                    em = discord.Embed(description=f"Vous avez désormais la couleur **{newrole.name}**", color=newrole.color)
+                    em.set_author(name=str(member), icon_url=member.avatar_url)
+                    await ctx.send(embed=em)
+                else:
+                    await ctx.send(f"**Impossible** • Vous n'êtes pas autorisé à utiliser cette commande (Whitelist)")
+            except Exception as e:
+                await ctx.send(f"**Erreur** • {e}")
         os.remove(filename)
 
     @commands.command(name="remcolor", aliases=["removecolor"])
@@ -279,19 +287,19 @@ class Hex(commands.Cog):
         user = ctx.author
         guild = ctx.guild
         all_colors = await self.config.guild(guild).roles()
-
-        userroles = [r.name for r in user.roles]
-        delroles = []
-        for col in userroles:
-            if col in all_colors:
-                role = discord_get(guild.roles, name=col)
-                delroles.append(role)
-        if delroles:
-            await user.remove_roles(*delroles, reason="Retrait du/des rôle(s) sur demande du membre")
-            await self.clear_multiple_colors(guild, [i.name for i in delroles])
-            await ctx.send("**Couleur(s) retirée(s)** • Vous n'avez plus aucun rôle coloré provenant du bot")
-        else:
-            await ctx.send("**Aucun rôle** • Aucun rôle coloré que vous possédez ne provient de ce bot")
+        async with ctx.channel.typing():
+            userroles = [r.name for r in user.roles]
+            delroles = []
+            for col in userroles:
+                if col in all_colors:
+                    role = discord_get(guild.roles, name=col)
+                    delroles.append(role)
+            if delroles:
+                await user.remove_roles(*delroles, reason="Retrait du/des rôle(s) sur demande du membre")
+                await self.clear_multiple_colors(guild, [i.name for i in delroles])
+                await ctx.send("**Couleur(s) retirée(s)** • Vous n'avez plus aucun rôle coloré provenant du bot")
+            else:
+                await ctx.send("**Aucun rôle** • Aucun rôle coloré que vous possédez ne provient de ce bot")
 
 
     @commands.group(name="colorset")
