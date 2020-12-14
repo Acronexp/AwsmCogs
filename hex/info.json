@@ -1,0 +1,11 @@
+{
+	"author": ["Acrone", "Maglatranir"],
+	"description": "Gestion automatique des rôles de couleurs",
+	"install_msg": "Merci d'avoir installé ce module. Consultez `[p]help` pour voir les commandes disponibles",
+	"short": "Gestion des rôles colorés",
+	"tags": ["community", "roles", "color"],
+	"requirements" : [
+      "colorthief"
+    ],
+	"type": "COG"
+}
