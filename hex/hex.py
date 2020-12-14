@@ -52,10 +52,10 @@ class Hex(commands.Cog):
         """Crée la couleur si elle n'existe pas et le positionne correctement dans la liste si un délimiteur est donné
 
         Retourne le rôle créé ou à défaut le rôle déjà présent"""
-        name = color.replace("0x", "#")
+        name = self.format_color(color, "#")
         role = discord_get(guild.roles, name=name)
         if not role:
-            rolecolor = int(color.replace("#", "0x"), base=16)
+            rolecolor = int(self.format_color(color, "0x"), base=16)
             role = await guild.create_role(name=name, color=discord.Colour(rolecolor),
                                     reason="Création auto. de rôle de couleur nécessaire", mentionable=False)
             await self.cache_color(guild, color)
@@ -68,7 +68,7 @@ class Hex(commands.Cog):
 
     async def clear_color(self, guild: discord.Guild, color: str):
         """Vérifie s'il y a encore des membres possédant la couleur et supprime le rôle ce n'est pas le cas"""
-        name = color.replace("0x", "#")
+        name = self.format_color(color, "#")
         role = discord_get(guild.roles, name=name)
         if role:
             for u in guild.members:
@@ -84,13 +84,13 @@ class Hex(commands.Cog):
         return True
 
     async def cache_color(self, guild: discord.Guild, color: str):
-        name = color.replace("0x", "#")
+        name = self.format_color(color, "#")
         if not name in await self.config.guild(guild).roles():
-            rolecolor = color.replace("#", "0x")
+            rolecolor = self.format_color(color, "0x")
             await self.config.guild(guild).roles.set_raw(name, value=rolecolor)
 
     async def clear_cache_color(self, guild: discord.Guild, color: str):
-        name = color.replace("0x", "#")
+        name = self.format_color(color, "#")
         if name in await self.config.guild(guild).roles():
             await self.config.guild(guild).roles.clear_raw(name)
 
@@ -101,21 +101,23 @@ class Hex(commands.Cog):
         guild = user.guild
         all_colors = await self.config.guild(guild).roles()
 
-        if check_perms and not await self.is_allowed(user):
-            return False
+        if self.format_color(color, "#") not in (r.name for r in user.roles):
+            if check_perms and not await self.is_allowed(user):
+                return False
 
-        userroles = [r.name for r in user.roles]
-        delroles = []
-        for col in userroles:
-            if col in all_colors:
-                role = discord_get(guild.roles, name=col)
-                delroles.append(role)
-        await user.remove_roles(*delroles)
-        await self.clear_multiple_colors(guild, [r.name for r in delroles])
+            userroles = [r.name for r in user.roles]
+            delroles = []
+            for col in userroles:
+                if col in all_colors:
+                    role = discord_get(guild.roles, name=col)
+                    delroles.append(role)
+            await user.remove_roles(*delroles)
+            await self.clear_multiple_colors(guild, [r.name for r in delroles])
 
-        role = await self.get_color(guild, color)
-        await user.add_roles(role, reason="Changement de rôle coloré")
-        return role
+            role = await self.get_color(guild, color)
+            await user.add_roles(role, reason="Changement de rôle coloré")
+            return role
+        return discord_get(guild.roles, name=self.format_color(color, "#"))
 
     async def is_allowed(self, user: discord.Member):
         """Vérifie les permissions s'il y a une whitelist active"""
@@ -128,12 +130,12 @@ class Hex(commands.Cog):
                 return False
         return True
 
-    def format_color(self, color: str):
-        """Vérifie que la couleur donnée est un hexadécimal et renvoie la couleur sans préfixe (0x ou #)"""
+    def format_color(self, color: str, prefixe: str = None):
+        """Vérifie que la couleur donnée est un hexadécimal et renvoie la couleur avec ou sans préfixe (0x ou #)"""
         color = color[-6:]
         try:
             int(color, base=16)
-            return color
+            return color.upper() if not prefixe else prefixe + color.upper()
         except ValueError:
             return False
 
@@ -141,7 +143,7 @@ class Hex(commands.Cog):
         """Retrouve l'hex lié au nom de couleur (CSS3/HTML)"""
         try:
             hex = webcolors.name_to_hex(name)
-            return hex.replace("#", "0x")
+            return self.format_color(hex, "0x")
         except:
             return False
 
@@ -176,7 +178,7 @@ class Hex(commands.Cog):
                     await exe("remcolor")
                 else:
                     if self.format_color(couleur):
-                        couleur = "0x" + self.format_color(couleur)
+                        couleur = self.format_color(couleur, "0x")
                     elif self.css_name_hex(couleur):
                         couleur = self.css_name_hex(couleur)
                     else:
@@ -344,7 +346,7 @@ class Hex(commands.Cog):
     async def give_color(self, ctx, user: discord.Member, couleur: str):
         """Donne la couleur voulue au membre, même si celui-ci n'est pas autorisé à le faire lui-même"""
         if self.format_color(couleur):
-            couleur = "#" + self.format_color(couleur)
+            couleur = self.format_color(couleur, "#")
             role = await self.set_user_color(user, couleur, check_perms=False)
             if role:
                 em = discord.Embed(description=f"{ctx.author.mention} a donné la couleur **{role.name}** à {user.mention}",
