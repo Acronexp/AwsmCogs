@@ -172,7 +172,6 @@ class Hex(commands.Cog):
     @commands.command(name="color")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True, mention_everyone=True)
     async def set_color(self, ctx, couleur: str = None):
         """Changer manuellement votre rôle de couleur (format hexadécimal ou nom CSS3/HTML)
@@ -250,7 +249,6 @@ class Hex(commands.Cog):
     @commands.command(name="autocolor")
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True)
     async def set_autocolor(self, ctx):
         """Détecte la couleur dominante de la photo de profil et applique le rôle coloré correspondant"""
@@ -288,7 +286,6 @@ class Hex(commands.Cog):
     @commands.command(name="remcolor", aliases=["removecolor"])
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    @commands.max_concurrency(1, commands.BucketType.guild)
     @commands.bot_has_guild_permissions(manage_roles=True)
     async def remove_color(self, ctx):
         """Retire votre rôle coloré
