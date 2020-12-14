@@ -158,16 +158,16 @@ class Hex(commands.Cog):
         Mettre "auto" à la place d'une couleur vous affecte la couleur dominante de votre avatar (v. ;autocolor)
         Affiche les couleurs déjà utilisées par d'autres membres du serveur si aucune couleur n'est donnée"""
         if couleur:
-            def exe(com: str):
+            async def exe(com: str):
                 prefix = await self.get_prefix(ctx.message)
                 msg = copy(ctx.message)
                 msg.content = prefix + com
                 return await self.bot.process_commands(msg)
 
             if couleur.lower() == "auto":  # de façon à ce que faire ";color auto" soit équivalent à ";autocolor"
-                exe("autocolor")
+                await exe("autocolor")
             elif couleur.lower() in ("none", "remove", "rem"):  # idem avec ";remcolor"
-                exe("remcolor")
+                await exe("remcolor")
             else:
                 if self.format_color(couleur):
                     couleur = "0x" + self.format_color(couleur)
