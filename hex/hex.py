@@ -78,6 +78,16 @@ class Hex(commands.Cog):
             return await guild.edit_role_positions(positions=changes)
         return False
 
+    async def is_color_shown(self, user: discord.Member):
+        all_colors = await self.config.guild(user.guild).roles()
+        to_show = None
+        for r in user.roles:
+            if r.name in all_colors:
+                to_show = r.color
+        if to_show:
+            return user.color == to_show
+        return None
+
     async def clear_color(self, guild: discord.Guild, color: str):
         """Vérifie s'il y a encore des membres possédant la couleur et supprime le rôle ce n'est pas le cas"""
         name = self.format_color(color, "#")
@@ -213,6 +223,8 @@ class Hex(commands.Cog):
                     if role:
                         em = discord.Embed(description=f"Vous avez désormais la couleur **{role.name}**", color=role.color)
                         em.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
+                        if not await self.is_color_shown(ctx.author):
+                            em.set_footer(text="⚠️ Attention, vous avez un autre rôle coloré au-dessus de celui-ci ! Votre couleur ne s'affichera pas tant qu'il est présent.")
                         await ctx.send(embed=em)
                     else:
                         await ctx.send("**Impossible** • Vous n'êtes pas autorisé à utiliser cette commande (Whitelist)")
