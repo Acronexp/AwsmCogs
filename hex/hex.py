@@ -52,6 +52,7 @@ class Hex(commands.Cog):
         """Crée la couleur si elle n'existe pas et le positionne correctement dans la liste si un délimiteur est donné
 
         Retourne le rôle créé ou à défaut le rôle déjà présent"""
+        await self.bot.wait_until_ready()
         name = self.format_color(color, "#")
         role = discord_get(guild.roles, name=name)
         if not role:
@@ -61,10 +62,19 @@ class Hex(commands.Cog):
             await self.cache_color(guild, color)
             delim = await self.config.guild(guild).delimiter()
             if delim:
-                delimpos = guild.get_role(delim).position
-                setpos = delimpos - 1 if delimpos > 1 else 1
-                await role.edit(position=setpos)
+                await self.arrange_role(guild, role)
         return role
+
+    async def arrange_role(self, guild: discord.Guild, role: discord.Role):
+        """Range le rôle sous le délimiteur"""
+        delim = await self.config.guild(guild).delimiter()
+        if delim and role in guild.roles:
+            if role.position < delim.position:
+                await role.edit(position=delim.position - 1)
+            else:
+                await role.edit(position=delim.position)
+            return True
+        return False
 
     async def clear_color(self, guild: discord.Guild, color: str):
         """Vérifie s'il y a encore des membres possédant la couleur et supprime le rôle ce n'est pas le cas"""
@@ -79,6 +89,7 @@ class Hex(commands.Cog):
         return True
 
     async def clear_multiple_colors(self, guild: discord.Guild, colors: list):
+        await self.bot.wait_until_ready()
         for color in colors:
             await self.clear_color(guild, color)
         return True
@@ -112,7 +123,6 @@ class Hex(commands.Cog):
                     role = discord_get(guild.roles, name=col)
                     delroles.append(role)
             await user.remove_roles(*delroles)
-            await self.bot.wait_until_ready()
             await self.clear_multiple_colors(guild, [r.name for r in delroles])
 
             role = await self.get_color(guild, color)
@@ -198,7 +208,7 @@ class Hex(commands.Cog):
             colors = []
             for r in all_roles:
                 try:
-                    colors.append(ctx.guild.get_role(r))
+                    colors.append(discord_get(ctx.guild.roles, name=r))
                 except:
                     await self.clear_color(ctx.guild, all_roles[r])
             if colors:
@@ -267,8 +277,9 @@ class Hex(commands.Cog):
         Si vous avez plusieurs rôles colorés (?) cette commande les retire tous peu importe que vous êtes passés par le bot pour les mettre ou non"""
         user = ctx.author
         guild = ctx.guild
-        userroles = [r.name for r in user.roles]
         all_colors = await self.config.guild(guild).roles()
+
+        userroles = [r.name for r in user.roles]
         delroles = []
         for col in userroles:
             if col in all_colors:
@@ -276,7 +287,6 @@ class Hex(commands.Cog):
                 delroles.append(role)
         if delroles:
             await user.remove_roles(*delroles, reason="Retrait du/des rôle(s) sur demande du membre")
-            await self.bot.wait_until_ready()
             await self.clear_multiple_colors(guild, [i.name for i in delroles])
             await ctx.send("**Couleur(s) retirée(s)** • Vous n'avez plus aucun rôle coloré provenant du bot")
         else:
@@ -456,3 +466,11 @@ class Hex(commands.Cog):
         await self.config.guild(guild).clear_raw("whitelist_list")
         await ctx.send(
             f"**Reset effectué** • La whitelist a été reset.")
+
+    @_color_settings.command(name="getcache")
+    @checks.is_owner()
+    async def get_color_cache(self, ctx):
+        """Affiche ce que contient le cache des rôles de couleur"""
+        roles = await self.config.guild(ctx.guild).roles()
+        txt = "\n".join([discord_get(ctx.guild.roles, name=r) for r in roles])
+        await ctx.send(txt)
