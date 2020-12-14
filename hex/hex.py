@@ -425,7 +425,7 @@ class Hex(commands.Cog):
             await ctx.send(
                 f"**Rôle déjà présent** • Ce rôle est déjà whitelisté, utilisez `;colorset whitelist delrole` pour le retirer.")
 
-    @_color_whitelist.command(name="addrole")
+    @_color_whitelist.command(name="delrole")
     async def color_whitelist_delrole(self, ctx, role: discord.Role):
         """Retirer un rôle de la whitelist"""
         guild = ctx.guild
