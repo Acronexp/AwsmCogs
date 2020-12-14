@@ -70,11 +70,11 @@ class Hex(commands.Cog):
         deid = await self.config.guild(guild).delimiter()
         if deid and role in guild.roles:
             delim = guild.get_role(deid)
-            if role.position < delim.position:
-                await role.edit(position=delim.position - 1)
-            else:
-                await role.edit(position=delim.position)
-            return True
+            changes = {
+                delim: delim.position,
+                role: delim.position - 1,
+            }
+            return await guild.edit_role_positions(positions=changes)
         return False
 
     async def clear_color(self, guild: discord.Guild, color: str):
