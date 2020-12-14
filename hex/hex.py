@@ -57,7 +57,7 @@ class Hex(commands.Cog):
         if not role:
             rolecolor = int(color.replace("#", "0x"), base=16)
             role = await guild.create_role(name=name, color=discord.Colour(rolecolor),
-                                    reason="Création auto. de rôle de couleur nécessaire", mentionnable=False)
+                                    reason="Création auto. de rôle de couleur nécessaire", mentionable=False)
             await self.cache_color(guild, color)
             delim = await self.config.guild(guild).delimiter()
             if delim:
