@@ -629,6 +629,12 @@ class XMas(commands.Cog):
         # TODO : Ajouter les succès personnels
         em = discord.Embed(title="Profil personnel", description=txt, color=user.color)
         em.set_author(name=str(user), icon_url=user.avatar_url)
+        user_perms = await self.fetch_team_member(user)
+        if user_perms:
+            perms = " ".join([f"`{p}`" for p in user_perms])
+        else:
+            perms = "Aucune permission"
+        em.add_field(name="Permissions", value=perms)
         if tips:
             em.set_footer(text=tips)
         await ctx.send(embed=em)
