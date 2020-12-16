@@ -590,7 +590,7 @@ class XMas(commands.Cog):
         teamname = await self.user_team(ctx.author)
         if teamname:
             team = await self.get_team(guild, teamname)
-            em = discord.Embed(title=f"Infos Team » {team['name']}", color=team["color"])
+            em = discord.Embed(title=f"Infos Team » {team['name']} ({teamname.upper()})", color=team["color"])
             chef = guild.get_member(team["leader"])
             nb = len(team["users"])
             txt = f"**Leader** · {chef.mention}\n" \
@@ -639,34 +639,46 @@ class XMas(commands.Cog):
         teamname = await self.user_team(ctx.author)
         if teamname:
             team = await self.get_team(ctx.guild, teamname)
-            options_txt = "Quitter votre team vous empêche de participer au jeu mais cela vous permet d'être engagé " \
-                          "par une autre team. Sachez que vous conservez votre score personnel (qui est donc soustrait" \
-                          " du score total de votre ancienne team). Ce score peut être un atout majeur pour rejoindre " \
-                          "une autre team qui récupèrera celui-ci dans ses comptes.\n\n"
-            options_txt += f"✅ · Quitter la team *{team['name']}*\n" \
-                          "❎ · Annuler"
-            em = discord.Embed(title=f"Êtes-vous sûr de vouloir quitter votre team ?",
-                               description=options_txt, color=team["color"])
-            em.set_footer(text="⚠️Sans team vous ne pouvez pas participer au jeu")
-            msg = await ctx.send(embed=em)
-            emojis = ["✅", "❎"]
+            if ctx.author.id != team["leader"]:
+                options_txt = "Quitter votre team vous empêche de participer au jeu mais cela vous permet d'être engagé " \
+                              "par une autre team. Sachez que vous conservez votre score personnel (qui est donc soustrait" \
+                              " du score total de votre ancienne team). Ce score peut être un atout majeur pour rejoindre " \
+                              "une autre team qui récupèrera celui-ci dans ses comptes.\n\n"
+                options_txt += f"✅ · Quitter la team *{team['name']}*\n" \
+                              "❎ · Annuler"
+                em = discord.Embed(title=f"Êtes-vous sûr de vouloir quitter votre team ?",
+                                   description=options_txt, color=team["color"])
+                em.set_footer(text="⚠️Sans team vous ne pouvez pas participer au jeu")
+                msg = await ctx.send(embed=em)
+                emojis = ["✅", "❎"]
 
-            start_adding_reactions(msg, emojis)
-            try:
-                react, user = await self.bot.wait_for("reaction_add",
-                                                      check=lambda r, u: u == ctx.author and r.message.id == msg.id,
-                                                      timeout=20)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                return
-            else:
-                emoji = react.emoji
+                start_adding_reactions(msg, emojis)
+                try:
+                    react, user = await self.bot.wait_for("reaction_add",
+                                                          check=lambda r, u: u == ctx.author and r.message.id == msg.id,
+                                                          timeout=20)
+                except asyncio.TimeoutError:
+                    await msg.delete()
+                    return
+                else:
+                    emoji = react.emoji
 
-            if emoji != "📃":
-                await msg.delete()
-                return
+                if emoji != "✅":
+                    await msg.delete()
+                    return
+                else:
+                    await msg.delete()
+
+                del team["users"][user.id]
+                await self.config.guild(ctx.guild).teams.set_raw(teamname, value=team)
+                await ctx.send(
+                    f"**Membre retiré** » {user.mention} a quitté son ancienne team ***{team['name']}***")
             else:
-                await msg.delete()
+                await ctx.send(
+                    f"**Impossible** • Etant donné que vous êtes leader, vous devez d'abord demander à un administrateur de changer le leader de votre équipe")
+        else:
+            await ctx.send(
+                f"**Erreur** • Vous n'avez pas de team à quitter")
 
     @_team_command.command(name="stock", aliases=["inv"])
     async def team_stock(self, ctx):
@@ -894,3 +906,22 @@ class XMas(commands.Cog):
             await ctx.send("**Voyage arrêté** • Celui-ci devrait s'arrêter d'un moment à l'autre...")
         else:
             await ctx.send("**Impossible** • vous n'êtes pas actuellement en train de voyager")
+
+    @_xmas_set.command(name="teamleader")
+    async def edit_team_leader(self, ctx, teamid: str, user: discord.Member):
+        """Modifier le leader d'une team"""
+        guild = ctx.guild
+        team = await self.get_team(guild, teamid)
+        if team:
+            if not await self.user_team(user) or await self.user_team(user) == teamid:
+                team["users"][user.id] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
+                team["leader"] = user.id
+                await self.config.guild(guild).teams.set_raw(teamid, value=team)
+                await ctx.send(f"**Leader modifié** » {user.mention} est désormais le nouveau leader de la team ***{team['name']}***\n"
+                               f"Il n'a besoin d'aucune permission pour réaliser toutes les actions nécessaires à sa "
+                               f"team dont le recrutement de membres. Il peut déléguer certains pouvoirs avec la "
+                               f"commande d'édition des permissions `;team admin perms`")
+            else:
+                await ctx.send("**Impossible** • Ce membre est déjà dans une team différente de celle visée")
+        else:
+            await ctx.send("**Erreur** • Cette team n'existe pas")
