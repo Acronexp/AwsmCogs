@@ -246,7 +246,7 @@ class Justice(commands.Cog):
                 if not params:
                     userjail = await self.user_jail(user)
                     if userjail:
-                        await self.get_cache(guild)["exit_loop"].append(user.id)
+                        self.get_cache(guild)["exit_loop"].append(user.id)
                         await self.unregister_jail(user)
                         if jail_role in user.roles:
                             await user.remove_roles(jail_role, reason=f"Sortie manuelle de prison par {moddisc}")
