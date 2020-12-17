@@ -80,7 +80,7 @@ class Justice(commands.Cog):
                 p = p.replace("-", "", 1).rstrip()
                 parsed["ope"] = "rem"
                 time = True
-            elif p.isdigit():
+            elif p[:-1].isdigit():
                 parsed["ope"] = "set"
                 time = True
             if time and not parsed.get("time", False):
@@ -209,6 +209,16 @@ class Justice(commands.Cog):
         moddisc = str(mod)
         color = await self.bot.get_embed_color(ctx.channel)
 
+        async def send_help():
+            htxt = "• `s` pour les **secondes**\n" \
+                  "• `m` pour les **minutes**\n" \
+                  "• `h` pour les **heures**\n" \
+                  "• `j` pour les **jours**\n" \
+                  "Ces unités doivent être ajoutées après la valeur (ex. `;p @membre 3h`)"
+            hem = discord.Embed(title="Aide » Formattage des paramètres de prison",
+                                description=htxt, color=color)
+            await ctx.send(embed=hem)
+
         if user.id == self.bot.user.id:
             rand = random.choice(("Il est hors de question que je me mette moi-même en prison ! 😭",
                                   "Non, vous ne pouvez pas me faire ça ! 😥",
@@ -243,59 +253,48 @@ class Justice(commands.Cog):
                 else:
                     userjail = await self.user_jail(user)
                     parsed = self.parse_params(list(params))
-                    secs = parsed.get("time", opt["default_time"])
-                    reason = parsed.get("reason", "N.R.")
-                    if parsed.get("ope", None) == "add" and userjail:
-                        await self.edit_jail_time(user, abs(secs))
-                        human = self.humanize_time(secs)
-                        await notif(f"🔏 Temps de prison de {user.mention} édité (+{human}) par {mod.mention}\n"
-                                    f"Raison : {reason}")
-                    elif parsed.get("ope", None) == "rem" and userjail:
-                        await self.edit_jail_time(user, -secs)
-                        human = self.humanize_time(secs)
-                        await notif(f"🔏 Temps de prison de {user.mention} édité (-{human}) par {mod.mention}\n"
-                                    f"Raison : {reason}")
-                    elif parsed.get("ope", None) in ["add", "set"] and not userjail:
-                        await self.register_jail(user, secs)
-                        human = self.humanize_time(secs)
-                        await user.add_roles(jail_role, reason=f"Envoyé en prison par {moddisc} | Raison : {reason}")
-                        await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human.string}")
-                        msg = await self.auto_jail_loop(user)
-                        if msg:
-                            await notif("🔓 " + msg)
-                        else:
-                            await notif("⚠️ Mise en prison impossible : rôle non configuré ou membre invalide")
-                    elif userjail and reason != "N.R.":
-                        await self.unregister_jail(user)
-                    elif parsed.get("info", False):
-                        jail = await self.user_jail(user)
-                        if jail:
-                            if type(jail) != bool:
-                                libe = datetime.fromtimestamp(jail).strftime("le %d/%m/%Y à %H:%M")
-                                txt = f"**Libération auto.** · Prévue {libe}"
+                    if parsed:
+                        secs = parsed.get("time", opt["default_time"])
+                        reason = parsed.get("reason", "N.R.")
+                        if parsed.get("ope", None) == "add" and userjail:
+                            await self.edit_jail_time(user, abs(secs))
+                            human = self.humanize_time(secs)
+                            await notif(f"🔏 Temps de prison de {user.mention} édité (+{human}) par {mod.mention}\n"
+                                        f"Raison : {reason}")
+                        elif parsed.get("ope", None) == "rem" and userjail:
+                            await self.edit_jail_time(user, -secs)
+                            human = self.humanize_time(secs)
+                            await notif(f"🔏 Temps de prison de {user.mention} édité (-{human}) par {mod.mention}\n"
+                                        f"Raison : {reason}")
+                        elif parsed.get("ope", None) in ["add", "set"] and not userjail:
+                            await self.register_jail(user, secs)
+                            human = self.humanize_time(secs)
+                            await user.add_roles(jail_role, reason=f"Envoyé en prison par {moddisc} | Raison : {reason}")
+                            await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human.string}")
+                            msg = await self.auto_jail_loop(user)
+                            if msg:
+                                await notif("🔓 " + msg)
                             else:
-                                txt = f"**Libération auto.** · Aucune (emprisonné manuellement)"
+                                await notif("⚠️ Mise en prison impossible : rôle non configuré ou membre invalide")
+                        elif userjail and reason != "N.R.":
+                            await self.unregister_jail(user)
+                        elif parsed.get("info", False):
+                            jail = await self.user_jail(user)
+                            if jail:
+                                if type(jail) != bool:
+                                    libe = datetime.fromtimestamp(jail).strftime("le %d/%m/%Y à %H:%M")
+                                    txt = f"**Libération auto.** · Prévue {libe}"
+                                else:
+                                    txt = f"**Libération auto.** · Aucune (emprisonné manuellement)"
+                            else:
+                                txt = f"Ce membre n'est pas emprisonné"
+                            await notif(txt)
                         else:
-                            txt = f"Ce membre n'est pas emprisonné"
-                        await notif(txt)
+                            await send_help()
                     else:
-                        txt = "• `s` pour les **secondes**\n" \
-                              "• `m` pour les **minutes**\n" \
-                              "• `h` pour les **heures**\n" \
-                              "• `j` pour les **jours**\n" \
-                              "Ces unités doivent être ajoutées après la valeur (ex. `;p @membre 3h`)"
-                        em = discord.Embed(title="Aide » Formattage des paramètres de prison",
-                                           description=txt, color=color)
-                        return await ctx.send(embed=em)
+                        await send_help()
             else:
-                txt = "• `s` pour les **secondes**\n" \
-                      "• `m` pour les **minutes**\n" \
-                      "• `h` pour les **heures**\n" \
-                      "• `j` pour les **jours**\n" \
-                      "Ces unités doivent être ajoutées après la valeur (ex. `;p @membre 3h`)"
-                em = discord.Embed(title="Aide » Formattage des paramètres de prison",
-                                   description=txt, color=color)
-                return await ctx.send(embed=em)
+                await send_help()
         else:
             await ctx.send("**Impossible** » Configurez d'abord un rôle de prisonnier")
 
