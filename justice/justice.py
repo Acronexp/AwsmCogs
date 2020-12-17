@@ -159,8 +159,9 @@ class Justice(commands.Cog):
                     while time.time() < cache["users"][user.id] and role in user.roles:
                         await asyncio.sleep(1)
                 except:
-                    if time.time() < cache["users"][user.id]:
-                        cache["save"][user.id] = cache["users"][user.id] - time.time()
+                    if user.id in cache["users"]:
+                        if time.time() < cache["users"][user.id]:
+                            cache["save"][user.id] = cache["users"][user.id] - time.time()
                 cache["loop"].remove(user.id)
                 if user:
                     if type(await self.user_jail(user)) != bool:
