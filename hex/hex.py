@@ -78,14 +78,14 @@ class Hex(commands.Cog):
             return await guild.edit_role_positions(positions=changes)
         return False
 
-    async def is_color_shown(self, user: discord.Member, to_show : discord.Role = None):
+    async def is_color_shown(self, user: discord.Member, to_show: discord.Role = None):
         all_colors = await self.config.guild(user.guild).roles()
         if not to_show:
             for r in user.roles:
                 if r.name in all_colors:
-                    to_show = r.color
+                    to_show = r
         if to_show:
-            return user.color == to_show
+            return user.color == to_show.color
         return None
 
     async def clear_color(self, guild: discord.Guild, color: str):
