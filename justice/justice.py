@@ -72,21 +72,21 @@ class Justice(commands.Cog):
         other = []
         for p in params:
             time = False
-            if params.startswith("+"):
-                params = params.replace("+", "", 1).rstrip()
+            if p.startswith("+"):
+                p = p.replace("+", "", 1).rstrip()
                 parsed["ope"] = "add"
                 time = True
-            elif params.startswith("-"):
-                params = params.replace("-", "", 1).rstrip()
+            elif p.startswith("-"):
+                p = p.replace("-", "", 1).rstrip()
                 parsed["ope"] = "rem"
                 time = True
-            elif params.isdigit():
+            elif p.isdigit():
                 parsed["ope"] = "set"
                 time = True
             if time and not parsed.get("time", False):
                 try:
-                    form = params[-1]
-                    val = int(params[:-1])
+                    form = p[-1]
+                    val = int(p[:-1])
                     parsed["time"] = val * convtable[form]
                 except:
                     pass
