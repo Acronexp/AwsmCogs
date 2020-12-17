@@ -457,4 +457,6 @@ class Justice(commands.Cog):
 
     def cog_unload(self):
         self.run_loops = False
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
+        for g in self.cache:
+            self.cache[g]["loop"] = []
