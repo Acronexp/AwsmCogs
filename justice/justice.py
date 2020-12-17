@@ -164,8 +164,8 @@ class Justice(commands.Cog):
                             cache["save"][user.id] = cache["users"][user.id] - time.time()
                 cache["loop"].remove(user.id)
                 if user in guild.members:
-                    if await self.user_jail(user):
-                        await self.unregister_jail(user)
+                    await self.unregister_jail(user)
+
                     if role in user.roles:
                         await user.remove_roles(role, reason=f"Sortie auto. de prison")
                         msg = random.choice((
