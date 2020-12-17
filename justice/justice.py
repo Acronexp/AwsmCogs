@@ -228,9 +228,7 @@ class Justice(commands.Cog):
                 if not params:
                     userjail = await self.user_jail(user)
                     if userjail:
-                        await user.remove_roles(jail_role, reason=f"Sortie de prison demandée par {moddisc}")
                         await self.unregister_jail(user)
-                        await notif(f"🔓 {user.mention} a été libéré par {mod.mention}")
                     else:
                         default_time = opt["default_time"]
                         await self.register_jail(user, default_time)
@@ -268,10 +266,7 @@ class Justice(commands.Cog):
                         else:
                             await notif("⚠️ Mise en prison impossible : rôle non configuré ou membre invalide")
                     elif userjail and reason != "N.R.":
-                        await user.remove_roles(jail_role, reason=f"Sortie de prison demandée par {moddisc} | Raison : {reason}")
                         await self.unregister_jail(user)
-                        await notif(f"🔓 {user.mention} a été libéré par {mod.mention}\n"
-                                    f"Raison : {reason}")
                     elif parsed.get("info", False):
                         jail = await self.user_jail(user)
                         if jail:
