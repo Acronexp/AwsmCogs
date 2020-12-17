@@ -235,7 +235,7 @@ class Justice(commands.Cog):
                                           "Non, vous ne pouvez pas me faire ça ! 😥",
                                           "Non mais ça ne va pas ? Et puis quoi encore ? 😡",
                                           "Bip boop, je ne peux pas faire ça, ça violerait les 3 lois de la robotique 🤖"))
-                    await ctx.send(rand)
+                    await ctx.send(rand, delete_after=30)
                     return
 
                 if not params:
