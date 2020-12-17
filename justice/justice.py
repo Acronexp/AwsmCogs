@@ -330,17 +330,23 @@ class Justice(commands.Cog):
         jail = await self.config.guild(guild).jail()
         if role:
             jail["role"] = role.id
-            await ctx.send(f"**Rôle modifié** » Le rôle {role.mention} sera désormais utilisé pour la prison")
+            await ctx.send(f"**Rôle modifié** » Le rôle {role.mention} sera désormais utilisé pour la prison\n"
+                           f"Faîtes `;pset check` pour régler automatiquement les permissions. "
+                           f"Sachez que vous devez manuellement monter le rôle à sa place appropriée dans la hiérarchie.")")
         else:
             maybe_role = discord_get(guild.roles, name="Prisonnier")
             if maybe_role:
                 jail["role"] = maybe_role.id
-                await ctx.send(f"**Rôle détecté** » Le rôle {maybe_role.mention} sera désormais utilisé pour la prison")
+                await ctx.send(f"**Rôle détecté** » Le rôle {maybe_role.mention} sera désormais utilisé pour la prison\n"
+                               f"Faîtes `;pset check` pour régler automatiquement les permissions. "
+                               f"Sachez que vous devez manuellement monter le rôle à sa place appropriée dans la hiérarchie.")
             else:
                 role = await guild.create_role(name="Prisonnier", color=discord.Colour.default(),
                                                reason="Création auto. du rôle de prisonnier")
                 jail["role"] = role.id
-                await ctx.send(f"**Rôle créé** » Le rôle {role.mention} sera désormais utilisé pour la prison")
+                await ctx.send(f"**Rôle créé** » Le rôle {role.mention} sera désormais utilisé pour la prison\n"
+                               f"Faîtes `;pset check` pour régler automatiquement les permissions. "
+                               f"Sachez que vous devez manuellement monter le rôle à sa place appropriée dans la hiérarchie.")
         await self.config.guild(guild).jail.set(jail)
         if jail["role"]:
             role = guild.get_role(jail["role"])
@@ -378,7 +384,7 @@ class Justice(commands.Cog):
                 await ctx.send("**Impossible** » Configurez d'abord un rôle de prisonnier avant de lui accorder des exceptions")
         elif jail["role"]:
             role = guild.get_role(jail["role"])
-            for channel in guild.channels:
+            for channel in guild.text_channels:
                 await channel.set_permissions(role, overwrite=None)
             await ctx.send("**Channels retirés** » Plus aucun channel n'accorde d'exception aux prisonniers")
             await self.config.guild(guild).jail.clear_raw("channels")
@@ -431,18 +437,20 @@ class Justice(commands.Cog):
             overwrite = discord.PermissionOverwrite(send_messages=True, add_reactions=True, read_messages=True,
                                                     view_channel=True)
             prisons = jail["channels"]
-            for channel in guild.channels:
+            allow_reactions = jail["reactions_allowed"]
+            for channel in guild.text_channels:
                 if channel.id in prisons:
                     try:
                         await channel.set_permissions(role, overwrite=overwrite,
                                                       reason="Réglage auto. des permissions pour la prison")
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error(e, exc_info=True)
                 else:
                     try:
-                        await channel.set_permissions(role, overwrite=None, reason="Réglage auto. des permissions pour la prison")
-                    except:
-                        pass
+                        await channel.set_permissions(role, read_messages=True, send_messages=False,
+                                                      add_reactions=allow_reactions)
+                    except Exception as e:
+                        logger.error(e, exc_info=True)
             await ctx.send("**Vérification terminée** » Les permissions du rôle ont été mis à jour en prenant en compte les exceptions des salons de prison")
         else:
             await ctx.send("**Vérification impossible** » Aucun rôle de prisonnier n'a été configuré")
