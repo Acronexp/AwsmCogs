@@ -455,7 +455,7 @@ class Justice(commands.Cog):
         else:
             await ctx.send("**Vérification impossible** » Aucun rôle de prisonnier n'a été configuré")
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.run_loops = False
         await asyncio.sleep(1)
         for g in self.cache:
