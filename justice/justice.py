@@ -36,6 +36,7 @@ class Justice(commands.Cog):
                                   "default_time": 300}}
         self.config.register_guild(**default_guild)
         self.cache = {}
+        self.run_loops = True
 
     def get_cache(self, guild: discord.Guild):
         if guild.id not in self.cache:
@@ -156,7 +157,7 @@ class Justice(commands.Cog):
             if user.id not in cache["loop"]:
                 cache["loop"].append(user.id)
                 try:
-                    while time.time() < cache["users"][user.id] and role in user.roles:
+                    while time.time() < cache["users"][user.id] and role in user.roles and self.run_loops:
                         await asyncio.sleep(1)
                 except:
                     if user.id in cache["users"]:
@@ -454,3 +455,6 @@ class Justice(commands.Cog):
         else:
             await ctx.send("**Vérification impossible** » Aucun rôle de prisonnier n'a été configuré")
 
+    def cog_unload(self):
+        self.run_loops = False
+        await asyncio.sleep(3)
