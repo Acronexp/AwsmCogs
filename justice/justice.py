@@ -242,6 +242,9 @@ class Justice(commands.Cog):
                     userjail = await self.user_jail(user)
                     if userjail:
                         await self.unregister_jail(user)
+                        if jail_role in user.roles:
+                            await user.remove_roles(jail_role, reason=f"Sortie manuelle de prison par {moddisc}")
+                            await notif(f"{user.mention} a été libéré par {mod.mention}")
                     else:
                         default_time = opt["default_time"]
                         await self.register_jail(user, default_time)
