@@ -36,12 +36,12 @@ class Justice(commands.Cog):
                                   "default_time": 300}}
         self.config.register_guild(**default_guild)
         self.cache = {}
-        self.run_loops = True
 
     def get_cache(self, guild: discord.Guild):
         if guild.id not in self.cache:
             self.cache[guild.id] = {"users": {},
                                     "loop": [],
+                                    "exit_loop": [],
                                     "save": {}}
         return self.cache[guild.id]
 
@@ -157,7 +157,7 @@ class Justice(commands.Cog):
             if user.id not in cache["loop"]:
                 cache["loop"].append(user.id)
                 try:
-                    while time.time() < cache["users"][user.id] and role in user.roles and self.run_loops:
+                    while time.time() < cache["users"][user.id] and role in user.roles and user.id not in cache["exit_loop"]:
                         await asyncio.sleep(1)
                 except:
                     if user.id in cache["users"]:
@@ -177,16 +177,21 @@ class Justice(commands.Cog):
                             f"{user.mention} est de nouveau libre"
                         ))
                         return msg
-                    else:
+                    elif user.id not in cache["exit_loop"]:
                         msg = random.choice((
                             f"{user.mention} a été manuellement libéré",
                             f"Sortie de {user.mention} manuelle",
                             f"{user.mention} a perdu son rôle de prisonnier pendant sa peine"
                         ))
                         return msg
+                    else:
+                        cache["exit_loop"].remove(user.id)
+                        return None
                 else:
                     if user.id in cache["users"]:
                         del cache["users"][user.id]
+                    if user.id in cache["exit_loop"]:
+                        cache["exit_loop"].remove(user.id)
                     return f"{user.mention} a quitté le serveur avant d'avoir fini sa peine"
         else:
             return False
@@ -241,8 +246,9 @@ class Justice(commands.Cog):
                 if not params:
                     userjail = await self.user_jail(user)
                     if userjail:
+                        await self.get_cache(guild)["exit_loop"].append(user.id)
                         await self.unregister_jail(user)
-                        if jail_role in user.roles and not user.id in self.get_cache(guild)["loop"]:
+                        if jail_role in user.roles:
                             await user.remove_roles(jail_role, reason=f"Sortie manuelle de prison par {moddisc}")
                             await notif(f"{user.mention} a été libéré par {mod.mention}")
                     else:
@@ -255,8 +261,6 @@ class Justice(commands.Cog):
                         msg = await self.auto_jail_loop(user)
                         if msg:
                             await notif("🔓 " + msg)
-                        else:
-                            await notif("⚠️ Mise en prison impossible : rôle non configuré ou membre invalide")
                 else:
                     userjail = await self.user_jail(user)
                     parsed = self.parse_params(list(params))
@@ -282,8 +286,6 @@ class Justice(commands.Cog):
                             msg = await self.auto_jail_loop(user)
                             if msg:
                                 await notif("🔓 " + msg)
-                            else:
-                                await notif("⚠️ Mise en prison impossible : rôle non configuré ou membre invalide")
                         elif userjail and reason != "N.R.":
                             await self.unregister_jail(user)
                         elif parsed.get("info", False):
@@ -459,7 +461,5 @@ class Justice(commands.Cog):
             await ctx.send("**Vérification impossible** » Aucun rôle de prisonnier n'a été configuré")
 
     async def cog_unload(self):
-        self.run_loops = False
-        await asyncio.sleep(1)
         for g in self.cache:
             self.cache[g]["loop"] = []
