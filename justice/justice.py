@@ -277,7 +277,7 @@ class Justice(commands.Cog):
                             human = self.humanize_time(secs).string
                             await notif(f"🔏 Temps de prison de {user.mention} édité (-{human}) par {mod.mention}\n"
                                         f"**Raison** · {reason}")
-                        elif parsed.get("ope", None) in ["add", "set"] and not userjail:
+                        elif not userjail and parsed.get("ope", False) != "rem":
                             await self.register_jail(user, secs)
                             human = self.humanize_time(secs).string
                             await user.add_roles(jail_role, reason=f"Envoyé en prison par {moddisc} | Raison : {reason}")
