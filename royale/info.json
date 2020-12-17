@@ -1,0 +1,12 @@
+{
+	"author": ["Acrone"],
+	"description": "Jouez à un Battle Royale revisité sur Discord",
+	"install_msg": "Merci d'avoir installé ce module. Consultez `[p]help` pour voir les commandes disponibles",
+	"short": "Battle royale sur Discord",
+	"tags": ["battle", "royale", "game", "fun"],
+	"requirements" : [
+      "roman",
+      "tabulate"
+    ],
+	"type": "COG"
+}

@@ -439,8 +439,7 @@ class Justice(commands.Cog):
         if jail["role"]:
             role = guild.get_role(jail["role"])
             await self.check_jail_role_perms(role)
-            overwrite = discord.PermissionOverwrite(send_messages=True, add_reactions=True, read_messages=True,
-                                                    view_channel=True)
+            overwrite = discord.PermissionOverwrite(send_messages=True, add_reactions=True, read_messages=True)
             prisons = jail["channels"]
             allow_reactions = jail["reactions_allowed"]
             for channel in guild.text_channels:
@@ -452,7 +451,7 @@ class Justice(commands.Cog):
                         logger.error(e, exc_info=True)
                 else:
                     try:
-                        await channel.set_permissions(role, read_messages=True, send_messages=False,
+                        await channel.set_permissions(role, read_messages=None, send_messages=False,
                                                       add_reactions=allow_reactions)
                     except Exception as e:
                         logger.error(e, exc_info=True)
