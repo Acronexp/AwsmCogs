@@ -332,7 +332,7 @@ class Justice(commands.Cog):
             jail["role"] = role.id
             await ctx.send(f"**Rôle modifié** » Le rôle {role.mention} sera désormais utilisé pour la prison\n"
                            f"Faîtes `;pset check` pour régler automatiquement les permissions. "
-                           f"Sachez que vous devez manuellement monter le rôle à sa place appropriée dans la hiérarchie.")")
+                           f"Sachez que vous devez manuellement monter le rôle à sa place appropriée dans la hiérarchie.")
         else:
             maybe_role = discord_get(guild.roles, name="Prisonnier")
             if maybe_role:
