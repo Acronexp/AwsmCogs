@@ -163,8 +163,8 @@ class Justice(commands.Cog):
                         if time.time() < cache["users"][user.id]:
                             cache["save"][user.id] = cache["users"][user.id] - time.time()
                 cache["loop"].remove(user.id)
-                if user:
-                    if type(await self.user_jail(user)) != bool:
+                if user in guild.members:
+                    if await self.user_jail(user):
                         await self.unregister_jail(user)
                     if role in user.roles:
                         await user.remove_roles(role, reason=f"Sortie auto. de prison")
@@ -219,14 +219,6 @@ class Justice(commands.Cog):
                                 description=htxt, color=color)
             await ctx.send(embed=hem)
 
-        if user.id == self.bot.user.id:
-            rand = random.choice(("Il est hors de question que je me mette moi-même en prison ! 😭",
-                                  "Non, vous ne pouvez pas me faire ça ! 😥",
-                                  "Non mais ça ne va pas ? Et puis quoi encore ? 😡",
-                                  "Bip boop, je ne peux pas faire ça, ça violerait les 3 lois de la robotique 🤖"))
-            await ctx.send(rand)
-            return
-
         if opt["role"]:
             jail_role = guild.get_role(opt["role"])
 
@@ -235,6 +227,15 @@ class Justice(commands.Cog):
                 await ctx.send(embed=em)
 
             if user:
+
+                if user.id == self.bot.user.id:
+                    rand = random.choice(("Il est hors de question que je me mette moi-même en prison ! 😭",
+                                          "Non, vous ne pouvez pas me faire ça ! 😥",
+                                          "Non mais ça ne va pas ? Et puis quoi encore ? 😡",
+                                          "Bip boop, je ne peux pas faire ça, ça violerait les 3 lois de la robotique 🤖"))
+                    await ctx.send(rand)
+                    return
+
                 if not params:
                     userjail = await self.user_jail(user)
                     if userjail:
@@ -243,8 +244,8 @@ class Justice(commands.Cog):
                         default_time = opt["default_time"]
                         await self.register_jail(user, default_time)
                         await user.add_roles(jail_role, reason=f"Envoyé en prison par {moddisc}")
-                        human = self.humanize_time(default_time)
-                        await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human.string}")
+                        human = self.humanize_time(default_time).string
+                        await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human}")
                         msg = await self.auto_jail_loop(user)
                         if msg:
                             await notif("🔓 " + msg)
@@ -258,19 +259,19 @@ class Justice(commands.Cog):
                         reason = parsed.get("reason", "N.R.")
                         if parsed.get("ope", None) == "add" and userjail:
                             await self.edit_jail_time(user, abs(secs))
-                            human = self.humanize_time(secs)
+                            human = self.humanize_time(secs).string
                             await notif(f"🔏 Temps de prison de {user.mention} édité (+{human}) par {mod.mention}\n"
                                         f"Raison : {reason}")
                         elif parsed.get("ope", None) == "rem" and userjail:
                             await self.edit_jail_time(user, -secs)
-                            human = self.humanize_time(secs)
+                            human = self.humanize_time(secs).string
                             await notif(f"🔏 Temps de prison de {user.mention} édité (-{human}) par {mod.mention}\n"
                                         f"Raison : {reason}")
                         elif parsed.get("ope", None) in ["add", "set"] and not userjail:
                             await self.register_jail(user, secs)
-                            human = self.humanize_time(secs)
+                            human = self.humanize_time(secs).string
                             await user.add_roles(jail_role, reason=f"Envoyé en prison par {moddisc} | Raison : {reason}")
-                            await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human.string}")
+                            await notif(f"🔒 {user.mention} a été envoyé en prison par {mod.mention} pour {human}")
                             msg = await self.auto_jail_loop(user)
                             if msg:
                                 await notif("🔓 " + msg)
