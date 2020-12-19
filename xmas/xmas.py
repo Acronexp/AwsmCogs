@@ -235,7 +235,7 @@ class XMas(commands.Cog):
         teams = await self.config.guild(user.guild).teams()
         team = await self.user_team(user)
         if team:
-            return teams[team][str(user.id)]
+            return teams[team]["users"][str(user.id)]
         return None
 
     async def check_perms(self, user: discord.Member, perms: list):
