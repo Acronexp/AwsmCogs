@@ -227,7 +227,7 @@ class XMas(commands.Cog):
         guild = user.guild
         teams = await self.config.guild(guild).teams()
         for team in teams:
-            if user.id in teams[team]["users"]:
+            if str(user.id) in teams[team]["users"]:
                 return team
         return None
 
@@ -235,7 +235,7 @@ class XMas(commands.Cog):
         teams = await self.config.guild(user.guild).teams()
         team = await self.user_team(user)
         if team:
-            return teams[team][user.id]
+            return teams[team][str(user.id)]
         return None
 
     async def check_perms(self, user: discord.Member, perms: list):
@@ -677,7 +677,7 @@ class XMas(commands.Cog):
                 else:
                     await msg.delete()
 
-                del team["users"][user.id]
+                del team["users"][str(user.id)]
                 await self.config.guild(ctx.guild).teams.set_raw(teamname, value=team)
                 await ctx.send(
                     f"**Membre retiré** » {user.mention} a quitté son ancienne team ***{team['name']}***")
@@ -733,7 +733,7 @@ class XMas(commands.Cog):
                 team = await self.get_team(guild, teamname)
                 if await self.check_perms(ctx.author, ["gerer_membres"]):
                     if not await self.user_team(user):
-                        team["users"][int(user.id)] = ["livraisons"]
+                        team["users"][str(user.id)] = ["livraisons"]
                         await self.config.guild(guild).teams.set_raw(teamname, value=team)
                         await ctx.send(f"**Membre ajouté** » {user.mention} est désormais dans la team ***{team['name']}***\n"
                                        f"Si vous voulez lui ajouter des permissions, utilisez `;team admin perms`")
@@ -758,7 +758,7 @@ class XMas(commands.Cog):
                 team = await self.get_team(guild, teamname)
                 if await self.check_perms(ctx.author, ["gerer_membres"]):
                     if await self.user_team(user) == teamname:
-                        del team["users"][int(user.id)]
+                        del team["users"][str(user.id)]
                         await self.config.guild(guild).teams.set_raw(teamname, value=team)
                         await ctx.send(
                             f"**Membre retiré** » {user.mention} n'est plus dans la team ***{team['name']}***")
@@ -803,7 +803,7 @@ class XMas(commands.Cog):
                         if perms:
                             check = perms_check(list(perms))
                             if not check:
-                                team["users"][int(user.id)] = list(perms)
+                                team["users"][str(user.id)] = list(perms)
                                 await self.config.guild(guild).teams.set_raw(teamname, value=team)
                                 liste = " ".join([f"`{i}`" for i in perms])
                                 await ctx.send(
@@ -812,7 +812,7 @@ class XMas(commands.Cog):
                                 await ctx.send(f"**Erreur** • `{check}` n'est pas une permission valide\n"
                                                f"Consultez les permissions disponibles en faisant `;help team admin perms`")
                         else:
-                            team["users"][int(user.id)] = []
+                            team["users"][str(user.id)] = []
                             await self.config.guild(guild).teams.set_raw(teamname, value=team)
                             await ctx.send(
                                 f"**Permissions retirées** » {user.mention} n'a plus aucune permissions")
@@ -922,7 +922,7 @@ class XMas(commands.Cog):
         team = await self.get_team(guild, teamid)
         if team:
             if not await self.user_team(user) or await self.user_team(user) == teamid:
-                team["users"][int(user.id)] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
+                team["users"][str(user.id)] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
                 if team["leader"]:
                     old_leader = team["leader"]
                     team["users"][old_leader] = ["livraisons"]
