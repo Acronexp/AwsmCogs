@@ -39,14 +39,18 @@ class Favboard(commands.Cog):
         em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
         em.set_footer(text=foot)
 
-        img = emimg = None
+        img = emimg = misc = None
         emtxt = ""
         if message.attachments:
             attach = message.attachments[0]
-            img = attach.url
+            ext = attach.filename.split(".")[-1]
+            if ext.lower() in ["png", "jpg", "jpeg", "gif", "gifv"]:
+                img = attach.url
+            else:
+                misc = attach.url
         if message.embeds:
             msg_em = message.embeds[0]
-            emtxt = ">>> " + msg_em.description if msg_em.description else ""
+            emtxt = "> " + msg_em.description if msg_em.description else ""
             if msg_em.image:
                 emimg = msg_em.image.url
             elif msg_em.thumbnail:
@@ -54,11 +58,13 @@ class Favboard(commands.Cog):
         if img:
             em.set_image(url=img)
             if emimg:
-                emtxt = emtxt + f"\n{emimg}" if emtxt else f">>> {emimg}"
+                emtxt = emtxt + f"\n{emimg}" if emtxt else emimg
         elif emimg:
             em.set_image(url=emimg)
+        if misc:
+            emtxt = emtxt + f"\n{misc}" if emtxt else misc
         if emtxt:
-            em.add_field(name="Contenu dans le message ↓", value=emtxt)
+            em.add_field(name="Inclus dans le message ↓", value=emtxt)
 
         return await destination.send(embed=em)
 
@@ -192,7 +198,7 @@ class Favboard(commands.Cog):
                         try:
                             fav = await self.config.guild(guild).favs.get_raw(message.id)
                         except:
-                            fav =  {"votes": [], "embed": None}
+                            fav = {"votes": [], "embed": None}
                             await self.config.guild(guild).favs.set_raw(message.id, value=fav)
 
                         if user.id not in fav["votes"]:
@@ -208,7 +214,7 @@ class Favboard(commands.Cog):
                                     await self.edit_fav(message, embed_msg)
                                 await self.config.guild(guild).favs.set_raw(message.id, value=fav)
 
-                    elif message.id in await self.config.guild(guild).favs(): # Suppression des données des MSG de +24h
+                    elif message.id in await self.config.guild(guild).favs():  # Suppression des données des MSG de +24h
                         await self.config.guild(guild).favs.clear_raw(message.id)
 
 
