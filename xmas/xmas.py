@@ -733,7 +733,7 @@ class XMas(commands.Cog):
                 team = await self.get_team(guild, teamname)
                 if await self.check_perms(ctx.author, ["gerer_membres"]):
                     if not await self.user_team(user):
-                        team["users"][user.id] = ["livraisons"]
+                        team["users"][int(user.id)] = ["livraisons"]
                         await self.config.guild(guild).teams.set_raw(teamname, value=team)
                         await ctx.send(f"**Membre ajouté** » {user.mention} est désormais dans la team ***{team['name']}***\n"
                                        f"Si vous voulez lui ajouter des permissions, utilisez `;team admin perms`")
@@ -758,7 +758,7 @@ class XMas(commands.Cog):
                 team = await self.get_team(guild, teamname)
                 if await self.check_perms(ctx.author, ["gerer_membres"]):
                     if await self.user_team(user) == teamname:
-                        del team["users"][user.id]
+                        del team["users"][int(user.id)]
                         await self.config.guild(guild).teams.set_raw(teamname, value=team)
                         await ctx.send(
                             f"**Membre retiré** » {user.mention} n'est plus dans la team ***{team['name']}***")
@@ -803,7 +803,7 @@ class XMas(commands.Cog):
                         if perms:
                             check = perms_check(list(perms))
                             if not check:
-                                team["users"][user.id] = list(perms)
+                                team["users"][int(user.id)] = list(perms)
                                 await self.config.guild(guild).teams.set_raw(teamname, value=team)
                                 liste = " ".join([f"`{i}`" for i in perms])
                                 await ctx.send(
@@ -812,7 +812,7 @@ class XMas(commands.Cog):
                                 await ctx.send(f"**Erreur** • `{check}` n'est pas une permission valide\n"
                                                f"Consultez les permissions disponibles en faisant `;help team admin perms`")
                         else:
-                            team["users"][user.id] = []
+                            team["users"][int(user.id)] = []
                             await self.config.guild(guild).teams.set_raw(teamname, value=team)
                             await ctx.send(
                                 f"**Permissions retirées** » {user.mention} n'a plus aucune permissions")
@@ -922,10 +922,11 @@ class XMas(commands.Cog):
         team = await self.get_team(guild, teamid)
         if team:
             if not await self.user_team(user) or await self.user_team(user) == teamid:
-                team["users"][user.id] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
-                old_leader = team["leader"]
+                team["users"][int(user.id)] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
+                if team["leader"]:
+                    old_leader = team["leader"]
+                    team["users"][old_leader] = ["livraisons"]
                 team["leader"] = user.id
-                team["users"][old_leader] = ["livraisons"]
                 await self.config.guild(guild).teams.set_raw(teamid, value=team)
                 await ctx.send(f"**Leader modifié** » {user.mention} est désormais le nouveau leader de la team ***{team['name']}***\n"
                                f"Il n'a besoin d'aucune permission pour réaliser toutes les actions nécessaires à sa "
@@ -935,3 +936,20 @@ class XMas(commands.Cog):
                 await ctx.send("**Impossible** • Ce membre est déjà dans une team différente de celle visée")
         else:
             await ctx.send("**Erreur** • Cette team n'existe pas")
+
+    @_xmas_set.command(name="resetteam")
+    async def reset_team(self, ctx, teamid: str):
+        """Reset les données d'une team
+
+        Mettre 'all' reset les données de toutes les teams"""
+        guild = ctx.guild
+        if teamid != "all":
+            team = await self.get_team(guild, teamid)
+            if team:
+                await self.config.guild(guild).clear_raw("teams", teamid)
+                await ctx.send("**Reset effectué**")
+            else:
+                await ctx.send("**Team inconnue** • Cet identifiant de team n'existe pas")
+        else:
+            await self.config.guild(guild).clear_raw("teams")
+            await ctx.send("**Reset total effectué**")
