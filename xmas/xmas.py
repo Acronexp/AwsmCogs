@@ -925,8 +925,8 @@ class XMas(commands.Cog):
                 team["users"][str(user.id)] = ["gerer_membres", "gerer_props", "gerer_perms", "livraisons"]
                 if team["leader"]:
                     old_leader = team["leader"]
-                    team["users"][old_leader] = ["livraisons"]
-                team["leader"] = user.id
+                    team["users"][str(old_leader)] = ["livraisons"]
+                team["leader"] = int(user.id)
                 await self.config.guild(guild).teams.set_raw(teamid, value=team)
                 await ctx.send(f"**Leader modifié** » {user.mention} est désormais le nouveau leader de la team ***{team['name']}***\n"
                                f"Il n'a besoin d'aucune permission pour réaliser toutes les actions nécessaires à sa "
