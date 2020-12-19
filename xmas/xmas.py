@@ -442,7 +442,7 @@ class XMas(commands.Cog):
 
                                 spawn = await spawn_channel.send(embed=em)
 
-                                def check(msg: discord.Message):
+                                async def check(msg: discord.Message):
                                     return not msg.author.bot and self.normalize(message.content) == self.normalize(
                                         guess) and await self.user_team(msg.author)
 
