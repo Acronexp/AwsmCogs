@@ -380,10 +380,12 @@ class XMas(commands.Cog):
 
                                 spawn = await spawn_channel.send(embed=em)
                                 start_adding_reactions(spawn, ["🎁"])
-                                verif = lambda r, u: r.message.id == spawn.id and not u.bot and await self.user_team(u)
+                                async def check_msg(r, u):
+                                    return r.message.id == spawn.id and not u.bot and await self.user_team(u)
+
                                 try:
                                     react, user = await self.bot.wait_for("reaction_add",
-                                                                          check=verif,
+                                                                          check=check_msg,
                                                                           timeout=30)
                                 except asyncio.TimeoutError:
                                     await spawn.delete()
