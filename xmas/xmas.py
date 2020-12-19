@@ -599,7 +599,7 @@ class XMas(commands.Cog):
                   f"**Nombre de membres** · {nb}"
             em.description = txt
             pts_team = team["team_score"]
-            pts_members = await self.team_users_score(guild, team)
+            pts_members = await self.team_users_score(guild, teamname)
             total = pts_team + pts_members
             scoretxt = f"```py\n" \
                        f"Points de la team : {pts_team}\n" \
