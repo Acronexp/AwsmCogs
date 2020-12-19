@@ -142,7 +142,7 @@ class XMas(commands.Cog):
             return travel[0]
         return None
 
-    def calc_pause(self, guild: discord.Guild, triggers: list):
+    async def calc_pause(self, guild: discord.Guild, triggers: list):
         params = await self.config.guild(guild).all()
         limit = params["travel_pause_trigger"]
         if len(triggers) > 2:
@@ -155,7 +155,7 @@ class XMas(commands.Cog):
         cache = self.get_cache(guild)
         if not cache["traveling"]:
             if cache["last_travel"] + cache["between_travels"] <= time.time():
-                if not self.calc_pause(guild, cache["last_triggers"]):
+                if not await self.calc_pause(guild, cache["last_triggers"]):
                     cache["traveling"] = True
                     if cache["travel_pause"]:
                         cache["travel_pause"] = False
