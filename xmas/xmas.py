@@ -69,15 +69,15 @@ class XMas(commands.Cog):
 
         default_guild = {"teams": {"r": {"name": "Rouge",
                                          "team_score": 0, "stock": {}, "lvl": 0, "users": {}, "color": 0xfc0303,
-                                         "namechange": 0},
+                                         "namechange": 0, "leader": None},
 
                                    "v": {"name": "Verte",
                                          "team_score": 0, "stock": {}, "lvl": 0, "users": {}, "color": 0x2bd914,
-                                         "namechange": 0},
+                                         "namechange": 0, "leader": None},
 
                                    "b": {"name": "Bleue",
                                          "team_score": 0, "stock": {}, "lvl": 0, "users": {}, "color": 0x1582e8,
-                                         "namechange": 0}},
+                                         "namechange": 0, "leader": None}},
 
                          "notif_channel": None,
                          "spawn_channel": None,
