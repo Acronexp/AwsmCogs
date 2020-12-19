@@ -256,7 +256,7 @@ class XMas(commands.Cog):
         users = team["users"]
         total = 0
         for u in users:
-            total += data[u]["user_score"]
+            total += data[str(u)]["user_score"]
         return total
 
     # USER ------------------
