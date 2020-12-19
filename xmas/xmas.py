@@ -274,7 +274,7 @@ class XMas(commands.Cog):
             return result[0]
         return None
 
-    def new_gift(self, guild: discord.Guild):
+    async def new_gift(self, guild: discord.Guild):
         """Génère un cadeau en prenant en compte le parcours à suivre"""
         travel = await self.get_travel(guild)
         dest = random.choice(travel[3:])
@@ -366,7 +366,7 @@ class XMas(commands.Cog):
                             # TODO: Maj ajoutant les "Rush" (equiv. de la distribution générale en octobre)
 
                             if random.randint(1, 4) < 4:
-                                gift = self.new_gift(guild)
+                                gift = await self.new_gift(guild)
                                 emoji = random.choice(("🎁", "🎄", "☃️", "❄️"))
                                 text = random.choice((
                                     f"Les lutins ont terminé de fabriquer {gift} Premier arrivé, premier servi.",
@@ -407,7 +407,7 @@ class XMas(commands.Cog):
                                     await spawn.delete(delay=15)
 
                             else:
-                                gift = self.new_gift(guild)
+                                gift = await self.new_gift(guild)
                                 gift.lvl = 3
 
                                 emoji = random.choice(("🎁", "🎄", "☃️", "❄️"))
