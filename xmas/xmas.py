@@ -737,6 +737,8 @@ class XMas(commands.Cog):
                         await self.config.guild(guild).teams.set_raw(teamname, value=team)
                         await ctx.send(f"**Membre ajouté** » {user.mention} est désormais dans la team ***{team['name']}***\n"
                                        f"Si vous voulez lui ajouter des permissions, utilisez `;team admin perms`")
+                        if user.id not in await self.config.all_members(guild):
+                            await self.config.member(user).set_raw("succes", value=["Participant"])
                     else:
                         await ctx.send("**Impossible** • Ce membre est déjà dans une autre team")
                 else:
@@ -928,6 +930,8 @@ class XMas(commands.Cog):
                     team["users"][str(old_leader)] = ["livraisons"]
                 team["leader"] = int(user.id)
                 await self.config.guild(guild).teams.set_raw(teamid, value=team)
+                if user.id not in await self.config.all_members(guild):
+                    await self.config.member(user).set_raw("succes", value=["Participant"])
                 await ctx.send(f"**Leader modifié** » {user.mention} est désormais le nouveau leader de la team ***{team['name']}***\n"
                                f"Il n'a besoin d'aucune permission pour réaliser toutes les actions nécessaires à sa "
                                f"team dont le recrutement de membres. Il peut déléguer certains pouvoirs avec la "
