@@ -115,6 +115,11 @@ class XRole(commands.Cog):
                     del data[r]
                     update = True
                     continue
+                if not found:
+                    logger.info(f"Le rôle {r} était inaccessible et a donc été supprimé")
+                    del data[r]
+                    update = True
+                    continue
                 rdata = data[r]
                 chunk = f"**{n}**. **@{found.name}**"
                 if found.mentionable:
