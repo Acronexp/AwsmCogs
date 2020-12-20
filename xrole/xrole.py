@@ -31,7 +31,8 @@ class XRole(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=736144321857978388, force_registration=True)
 
-        default_guild = {"selfroles" : {}}
+        default_guild = {"selfroles": {},
+                         "random_on_member_join": []}
         self.config.register_guild(**default_guild)
 
     async def get_selfroles(self, guild: discord.Guild):
@@ -331,9 +332,37 @@ class XRole(commands.Cog):
                                 nb = int(resp.content)
                                 if nb > 0:
                                     pass"""
-                                    
 
+    @manage_xrole.command(name="randomrole")
+    async def set_randomrole(self, ctx, *roles: discord.Role):
+        """Configurer un ensemble de rôle qui seront attribués aléatoirement aux arrivants"""
+        guild = ctx.guild
+        if roles:
+            liste = []
+            txt = ""
+            for r in roles:
+                if r in guild.roles:
+                    liste.append(r.id)
+                    txt += f"- {r.mention}\n"
+            if liste:
+                await self.config.guild(guild).random_on_member_join.set(liste)
+                em = discord.Embed(title="Rôles pouvant être attribués aléatoirement à l'arrivée", description=txt)
+                await ctx.send(embed=em)
+            else:
+                await ctx.send("**Erreur** • Aucun rôle valide")
+        else:
+            await self.config.guild(guild).clear_raw("random_on_member_join")
+            await ctx.send("**Fonctionnalité désactivée** • Le bot cessera de donner un rôle aléatoire à l'arrivée")
 
-
-
+    @commands.Cog.listener()
+    async def on_member_join(self, user):
+        if user.guild:
+            guild = user.guild
+            if await self.config.guild(guild).random_on_member_join():
+                roles = await self.config.guild(guild).random_on_member_join()
+                try:
+                    role = guild.get_role(random.choice(roles))
+                    await user.add_roles(role, reason="Rôle attribué aléatoirement à l'arrivée")
+                except:
+                    pass
 
