@@ -147,9 +147,9 @@ class Hex(commands.Cog):
         guild = user.guild
         if await self.config.guild(guild).whitelist():
             liste = await self.config.guild(guild).whitelist_list()
-            urolesid = [r.id for r in user.roles]
-            if user.id not in liste and not [i for i in [urolesid] if i in liste] and \
-                    not user.guild_permissions.manage_roles:
+            verif = [r.id for r in user.roles]
+            verif.append(user.id)
+            if not [i for i in verif if i in liste] and not user.guild_permissions.manage_roles:
                 return False
         return True
 
