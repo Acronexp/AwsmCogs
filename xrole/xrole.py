@@ -370,6 +370,7 @@ class XRole(commands.Cog):
             guild = user.guild
             if await self.config.guild(guild).random_on_member_join():
                 roles = await self.config.guild(guild).random_on_member_join()
+                await asyncio.sleep(30)
                 try:
                     role = guild.get_role(random.choice(roles))
                     await user.add_roles(role, reason="Rôle attribué aléatoirement à l'arrivée")
