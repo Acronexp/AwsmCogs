@@ -788,4 +788,5 @@ class Cash(commands.Cog):
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, author):
         if reaction.message.guild:
-            await self.manage_presence_bonus(reaction.message.author)
+            if not author.bot:
+                await self.manage_presence_bonus(author)
