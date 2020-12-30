@@ -140,7 +140,7 @@ class Cash(commands.Cog):
     async def get_account(self, member: discord.Member) -> Account:
         """Obtenir l'objet Account du membre demandé"""
         userdata = await self.config.member(member).all()
-        return Account(**userdata)
+        return Account(member, **userdata)
 
     async def get_balance(self, member: discord.Member) -> int:
         """Renvoie la valeur actuelle du solde d'un membre"""
@@ -783,7 +783,8 @@ class Cash(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild:
-            await self.manage_presence_bonus(message.author)
+            if not message.author:
+                await self.manage_presence_bonus(message.author)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, author):
