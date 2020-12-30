@@ -311,11 +311,11 @@ class Cash(commands.Cog):
         except:
             raise ValueError(f"Le code cadeau {code} n'est pas valide")
 
-    async def get_delta(self, member: discord.Member, yield_date: bool = False) -> Union[int, Tuple[str, int]]:
+    async def get_delta(self, member: discord.Member, yield_date: bool = False) -> Union[int, list]:
         """Renvoie la valeur et date du delta total des opérations du membre"""
         acc = await self.get_account(member)
-        date, delta = acc.config["day_delta"]
-        return delta if not yield_date else date, delta
+        delta = acc.config["day_delta"]
+        return delta[1] if not yield_date else delta
 
     async def edit_delta(self, member: discord.Member, value: int) -> int:
         """Modifie la valeur du delta des opérations du jour
