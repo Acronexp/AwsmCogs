@@ -673,7 +673,7 @@ class Cash(commands.Cog):
 
     @commands.group(name="bankset", aliases=["bset"])
     @checks.admin_or_permissions(manage_messages=True)
-    async def _bank_set(self, ctx, user: discord.Member = None):
+    async def _bank_set(self, ctx):
         """Commandes de modération de la banque"""
 
     @_bank_set.command(name="monnaie", aliases=["currency"])
