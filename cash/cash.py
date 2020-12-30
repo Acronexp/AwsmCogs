@@ -286,10 +286,7 @@ class Cash(commands.Cog):
 
     async def use_gift_code(self, user: discord.Member, code: str) -> Union[int, bool]:
         """Utilise un code et renvoie la valeur qu'il contenait si le membre générateur possède suffisamment de fonds, sinon renvoie False"""
-        try:
-            gift = await self.get_gift_code(user.guild, code)
-        except:
-            raise
+        gift = await self.get_gift_code(user.guild, code)
         if not gift:
             raise UnknownGiftCode(f"Le code cadeau {code} n'existe pas pour GUILD_ID={user.guild.id}")
         if not await self.enough_balance(user, gift.value):
@@ -577,7 +574,10 @@ class Cash(commands.Cog):
         code = code.upper().strip()
 
         try:
-            gift = await self.fetch_gift_code(code)
+            if ctx.guild:
+                gift = await self.get_gift_code(ctx.guild, code)
+            else:
+                gift = await self.fetch_gift_code(code)
         except ValueError:
             return await ctx.send("**Invalide** • Le code fourni est invalide, vérifiez-le et réessayez")
         except GiftCodeExpired:
