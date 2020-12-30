@@ -366,7 +366,7 @@ class Cash(commands.Cog):
         acc = await self.get_account(member)
         logs = acc.logs
         max_logs_length = await self.config.max_logs_length()
-        if len(logs) > max_logs_length:
+        if len(logs) >= max_logs_length:
             logs = logs[-(max_logs_length - 1):]
         logs.append(added)
 
