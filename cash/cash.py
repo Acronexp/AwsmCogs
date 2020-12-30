@@ -494,8 +494,7 @@ class Cash(commands.Cog):
         em.add_field(name="💰 Solde", value=box(f"{hum_balance} {curr}"))
         delta = await self.get_delta(user)
         delta_emoji = "📉" if delta < 0 else "📈"
-        hum_delta = humanize_number(delta)
-        em.add_field(name=f"{delta_emoji} Variation", value=box(f"{hum_delta:+}"))
+        em.add_field(name=f"{delta_emoji} Variation", value=box(f"{delta:+}"))
         top = await self.get_leaderboard_position_for(user)
         em.add_field(name="🏅 Position", value=box(f"#{top}"))
 
