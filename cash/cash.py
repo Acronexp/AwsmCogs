@@ -291,11 +291,8 @@ class Cash(commands.Cog):
             raise UnknownGiftCode(f"Le code cadeau {code} n'existe pas pour GUILD_ID={user.guild.id}")
         if not await self.enough_balance(user, gift.value):
             return False
-        try:
-            await self.transfert_credits(gift.author, user, gift.value)
-            return await self.remove_gift_code(user.guild, code)
-        except ValueError or TypeError:
-            raise
+        await self.transfert_credits(gift.author, user, gift.value)
+        return await self.remove_gift_code(user.guild, code)
 
     async def remove_gift_code(self, guild: discord.Guild, code: str) -> int:
         """Supprime le code et renvoie la valeur contenue dans celui-ci"""
