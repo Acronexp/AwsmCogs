@@ -474,7 +474,7 @@ class Cash(commands.Cog):
 
     # Commandes -----------------------v
 
-    @commands.group(name="bank", aliases=["b"])
+    @commands.group(name="bank", aliases=["b"], invoke_without_command=True)
     async def _bank_actions(self, ctx, user: discord.Member = None):
         """Commandes de gestion du compte bancaire virtuel *Cash*"""
         if ctx.invoked_subcommand is None:
