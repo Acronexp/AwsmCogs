@@ -168,11 +168,7 @@ class Cash(commands.Cog):
             raise BalanceTooHigh(f"Il est impossible de dépasser le seuil fixé de {max_balance} crédits")
 
         oldvalue = await self.config.member(member).balance()
-        if value >= oldvalue:
-            delta = value - oldvalue
-        else:
-            delta = oldvalue - value
-        await self.edit_delta(member, delta)
+        await self.edit_delta(member, value - oldvalue)
 
         await self.config.member(member).balance.set(value)
         return value
