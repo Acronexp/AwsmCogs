@@ -284,7 +284,7 @@ class Cash(commands.Cog):
             return GiftCode(author=user, value=c["value"], code=code, expire=c["expire"])
         return None
 
-    async def use_gift_code(self, user: discord.Member, code: str) -> Union[int, False]:
+    async def use_gift_code(self, user: discord.Member, code: str) -> Union[int, bool]:
         """Utilise un code et renvoie la valeur qu'il contenait si le membre générateur possède suffisamment de fonds, sinon renvoie False"""
         try:
             gift = await self.get_gift_code(user.guild, code)
