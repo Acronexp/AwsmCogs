@@ -780,7 +780,7 @@ class Cash(commands.Cog):
         if conf["presence_bonus"]:
             acc = await self.get_account(member)
             if acc.config["_presence_bonus"] + conf["presence_delay"] < time.time():
-                await self.config.member(member).config.set_raw("_presence_bonus", time.time())
+                await self.config.member(member).config.set_raw("_presence_bonus", value=time.time())
                 return await self.deposit_credits(member, conf["presence_bonus"])
         return False
 
