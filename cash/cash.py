@@ -779,7 +779,7 @@ class Cash(commands.Cog):
         conf = await self.config.guild(guild).all()
         if conf["presence_bonus"]:
             acc = await self.get_account(member)
-            if acc.config["cache_presence_bonus"] + conf["presence_delay"] > time.time():
+            if acc.config["cache_presence_bonus"] + conf["presence_delay"] < time.time():
                 await self.config.member(member).config.set_raw("cache_presence_bonus", value=time.time())
                 return await self.deposit_credits(member, conf["presence_bonus"])
         return False
@@ -787,7 +787,7 @@ class Cash(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild:
-            if not message.author:
+            if not message.author.bot:
                 await self.manage_presence_bonus(message.author)
 
     @commands.Cog.listener()
