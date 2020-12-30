@@ -478,7 +478,7 @@ class Cash(commands.Cog):
     async def _bank_actions(self, ctx, user: discord.Member = None):
         """Commandes de gestion du compte bancaire virtuel *Cash*"""
         if ctx.invoked_subcommand is None:
-            await ctx.invoke(self.show_bank, user=user)
+            return await ctx.invoke(self.show_bank, user=user)
 
     @_bank_actions.command(name="show")
     @commands.guild_only()
