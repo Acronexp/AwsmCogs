@@ -237,9 +237,9 @@ class Cash(commands.Cog):
             raise TypeError("Type de valeur invalide, {} != int".format(type(value)))
         if not isinstance(timestamp, int):
             raise TypeError("Type du timestamp d'expiration invalide, {} != int".format(type(timestamp)))
-        if value > 0:
+        if value < 0:
             raise ValueError("La valeur de crédits contenus dans le code doit être positif")
-        if timestamp >= 0:
+        if timestamp < 0:
             raise ValueError("La valeur de l'expiration doit être positive ou nulle")
 
         guild = from_.guild
@@ -563,7 +563,7 @@ class Cash(commands.Cog):
             except ValueError as e:
                 await ctx.send(
                     f"**Erreur** • La génération du code n'a pas pu se faire en raison d'un problème dans les valeurs fournies : `{e}`")
-                em.description = "**Erreur dans la génération du code**"
+                em.description = box("Erreur dans la génération du code")
                 await dm.edit(embed=em)
         else:
             await ctx.send(
