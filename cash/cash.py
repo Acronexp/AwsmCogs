@@ -288,17 +288,17 @@ class Cash(commands.Cog):
         """Utilise un code et renvoie la valeur qu'il contenait si le membre générateur possède suffisamment de fonds, sinon renvoie False"""
         try:
             gift = await self.get_gift_code(user.guild, code)
-            if not gift:
-                raise UnknownGiftCode(f"Le code cadeau {code} n'existe pas pour GUILD_ID={user.guild.id}")
-            if not await self.enough_balance(user, gift.value):
-                return False
-            try:
-                await self.transfert_credits(gift.author, user, gift.value)
-                return await self.remove_gift_code(user.guild, code)
-            except:
-                raise
         except:
-            raise ValueError(f"Le code cadeau {code} n'est pas valide")
+            raise
+        if not gift:
+            raise UnknownGiftCode(f"Le code cadeau {code} n'existe pas pour GUILD_ID={user.guild.id}")
+        if not await self.enough_balance(user, gift.value):
+            return False
+        try:
+            await self.transfert_credits(gift.author, user, gift.value)
+            return await self.remove_gift_code(user.guild, code)
+        except:
+            raise
 
     async def remove_gift_code(self, guild: discord.Guild, code: str) -> int:
         """Supprime le code et renvoie la valeur contenue dans celui-ci"""
