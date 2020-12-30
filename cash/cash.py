@@ -102,8 +102,8 @@ class Cash(commands.Cog):
         default_member = {"balance": 0,
                           "logs": [],
                           "config": {"day_delta": [None, 0],
-                                     "_daily_bonus": '',
-                                     "_presence_bonus": 0}
+                                     "cache_daily_bonus": '',
+                                     "cache_presence_bonus": 0}
                           }
 
         default_guild = {"currency": "Ꞥ",
@@ -634,8 +634,8 @@ class Cash(commands.Cog):
         curr = await self.get_currency(ctx.guild)
         bonus = await self.config.guild(ctx.guild).daily_bonus()
         if bonus:
-            if acc.config["_daily_bonus"] != today:
-                await self.config.member(author).config.set_raw("_daily_bonus", value=today)
+            if acc.config["cache_daily_bonus"] != today:
+                await self.config.member(author).config.set_raw("cache_daily_bonus", value=today)
                 new = await self.deposit_credits(author, bonus)
                 await self.add_log(author, "Bonus quotidien récupéré", bonus)
                 em = discord.Embed(color=author.color,
@@ -762,8 +762,8 @@ class Cash(commands.Cog):
         """Reset seulement les données du cache du compte bancaire du membre
 
         Cela réinitialise les délais des bonus"""
-        await self.config.member(user)._daily_bonus.clear()
-        await self.config.member(user)._presence_bonus.clear()
+        await self.config.member(user).cache_daily_bonus.clear()
+        await self.config.member(user).cache_presence_bonus.clear()
         await ctx.send(f"**Succès** • Le cache du compte de {user.mention} a été réinitialisé")
 
     # Bonus de présence ---------------------v
@@ -779,8 +779,8 @@ class Cash(commands.Cog):
         conf = await self.config.guild(guild).all()
         if conf["presence_bonus"]:
             acc = await self.get_account(member)
-            if acc.config["_presence_bonus"] + conf["presence_delay"] < time.time():
-                await self.config.member(member).config.set_raw("_presence_bonus", value=time.time())
+            if acc.config["cache_presence_bonus"] + conf["presence_delay"] < time.time():
+                await self.config.member(member).config.set_raw("cache_presence_bonus", value=time.time())
                 return await self.deposit_credits(member, conf["presence_bonus"])
         return False
 
