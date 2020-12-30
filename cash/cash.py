@@ -500,7 +500,7 @@ class Cash(commands.Cog):
 
         logs = await self.get_member_logs(user)
         if logs:
-            txt = "\n".join([f"{log.delta:+} · {log.text[:50]}" for log in logs])
+            txt = "\n".join([f"{log.delta:+} · {log.text[:50]}" for log in logs][::-1])
             em.add_field(name="📃 Historique", value=txt)
         await ctx.send(embed=em)
 
@@ -511,6 +511,8 @@ class Cash(commands.Cog):
         """Transférer de l'argent à un receveur tiers"""
         try:
             await self.transfert_credits(ctx.author, receveur, int(somme))
+            curr = await self.get_currency(ctx.guild)
+            await ctx.send(f"**Transfert réalisé** • {receveur.mention} a reçu **{somme}** {curr}")
         except ValueError:
             return await ctx.send("**Impossible** • Vous ne pouvez pas transférer une somme nulle ou négative")
         except BalanceTooHigh:
@@ -558,9 +560,11 @@ class Cash(commands.Cog):
                 em.description = box(code)
                 em.colour = user.color
                 await dm.edit(embed=em)
-            except ValueError:
+            except ValueError as e:
                 await ctx.send(
-                    "**Erreur** • La génération du code n'a pas pu se faire en raison d'un problème dans les valeurs fournies")
+                    f"**Erreur** • La génération du code n'a pas pu se faire en raison d'un problème dans les valeurs fournies : `{e}`")
+                em.description = "**Erreur dans la génération du code**"
+                await dm.edit(embed=em)
         else:
             await ctx.send(
                 "**Impossible** • Même si le retrait n'est pas immédiat, vous devez avoir la somme sur votre compte préalablement à la génération d'un code")
