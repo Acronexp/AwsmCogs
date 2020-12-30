@@ -616,7 +616,8 @@ class Cash(commands.Cog):
                         await ctx.send(f"**Utilisation réussie** • **{humanize_number(val)}** {curr} ont été "
                                        f"transférés sur votre compte.")
                     except Exception as e:
-                        await ctx.send(str(e).replace('\"', ''))
+                        logger.warning(e, exc_info=True)
+                        await ctx.send("`{}`".format(str(e).replace('\"', '')))
                 else:
                     await ctx.send(f"**Fonds insuffisants** • L'auteur du code ({str(gift.author)}) n'a plus les "
                                    f"fonds suffisants pour assumer la valeur de ce code")
