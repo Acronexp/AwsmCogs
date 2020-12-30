@@ -610,10 +610,10 @@ class Cash(commands.Cog):
             if emoji == "🎁":
                 if await self.enough_balance(gift.author, gift.value):
                     try:
-                        val = await self.use_gift_code(ctx.author, code)
+                        await self.use_gift_code(ctx.author, code)
                         await self.add_log(ctx.author, "Utilisation d'un code-cadeau", gift.value)
                         await self.add_log(gift.author, "Débit du code cadeau utilisé", -gift.value)
-                        await ctx.send(f"**Utilisation réussie** • **{humanize_number(val)}** {curr} ont été "
+                        await ctx.send(f"**Utilisation réussie** • **{humanize_number(gift.value)}** {curr} ont été "
                                        f"transférés sur votre compte.")
                     except Exception as e:
                         logger.warning(e, exc_info=True)
