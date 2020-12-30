@@ -762,8 +762,8 @@ class Cash(commands.Cog):
         """Reset seulement les données du cache du compte bancaire du membre
 
         Cela réinitialise les délais des bonus"""
-        await self.config.member(user).cache_daily_bonus.clear()
-        await self.config.member(user).cache_presence_bonus.clear()
+        await self.config.member(user).config.clear_raw("cache_daily_bonus")
+        await self.config.member(user).config.clear_raw("cache_presence_bonus")
         await ctx.send(f"**Succès** • Le cache du compte de {user.mention} a été réinitialisé")
 
     # Bonus de présence ---------------------v
@@ -779,7 +779,7 @@ class Cash(commands.Cog):
         conf = await self.config.guild(guild).all()
         if conf["presence_bonus"]:
             acc = await self.get_account(member)
-            if acc.config["cache_presence_bonus"] + conf["presence_delay"] < time.time():
+            if acc.config["cache_presence_bonus"] + conf["presence_delay"] > time.time():
                 await self.config.member(member).config.set_raw("cache_presence_bonus", value=time.time())
                 return await self.deposit_credits(member, conf["presence_bonus"])
         return False
