@@ -608,13 +608,13 @@ class Cash(commands.Cog):
                 if await self.enough_balance(gift.author, gift.value):
                     try:
                         await self.use_gift_code(ctx.author, code)
-                        await self.add_log(ctx.author, "Utilisation d'un code-cadeau", gift.value)
-                        await self.add_log(gift.author, "Débit du code cadeau utilisé", -gift.value)
-                        await ctx.send(f"**Utilisation réussie** • **{humanize_number(gift.value)}** {curr} ont été "
-                                       f"transférés sur votre compte.")
                     except Exception as e:
-                        logger.warning(e, exc_info=True)
-                        await ctx.send("`{}`".format(str(e).replace('\"', '')))
+                        logger.error(e, exc_info=True)
+                        return await ctx.send("Erreur de transfert de fonds : `{}`".format(str(e).replace('\"', '')))
+                    await self.add_log(ctx.author, "Utilisation d'un code-cadeau", gift.value)
+                    await self.add_log(gift.author, "Débit du code cadeau utilisé", -gift.value)
+                    await ctx.send(f"**Utilisation réussie** • **{humanize_number(gift.value)}** {curr} ont été "
+                                   f"transférés sur votre compte.")
                 else:
                     await ctx.send(f"**Fonds insuffisants** • L'auteur du code ({str(gift.author)}) n'a plus les "
                                    f"fonds suffisants pour assumer la valeur de ce code")
