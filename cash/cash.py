@@ -764,7 +764,7 @@ class Cash(commands.Cog):
 
     # Bonus de présence ---------------------v
 
-    async def manage_presence_bonus(self, member: discord.Member) -> Union[int, False]:
+    async def manage_presence_bonus(self, member: discord.Member) -> Union[int, bool]:
         """Gère l'ajout auto. des bonus de présence sur les serveurs ayant activé l'option
 
         Renvoie le nouveau solde du membre s'il est modifié, sinon False"""
