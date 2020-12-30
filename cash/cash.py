@@ -294,7 +294,7 @@ class Cash(commands.Cog):
         try:
             await self.transfert_credits(gift.author, user, gift.value)
             return await self.remove_gift_code(user.guild, code)
-        except:
+        except ValueError or TypeError:
             raise
 
     async def remove_gift_code(self, guild: discord.Guild, code: str) -> int:
