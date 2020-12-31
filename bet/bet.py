@@ -186,9 +186,15 @@ class Bet(commands.Cog):
                     betmsg = await channel.fetch_message(data["betmsg"])
 
                     votes = data[choix.lower()]["votes"]
-                    somme_a = sum([data["a"]["votes"][i] for i in data["a"]["votes"]])
-                    somme_b = sum([data["b"]["votes"][i] for i in data["b"]["votes"]])
-                    rdm = round(1 + (somme_a / somme_b), 2)
+                    if choix.lower() == "a":
+                        somme_a = sum([data["a"]["votes"][i] for i in data["a"]["votes"]])
+                        somme_b = sum([data["b"]["votes"][i] for i in data["b"]["votes"]])
+                        rdm = round(1 + (somme_b / somme_a), 2) if somme_b > 0 else 1.1
+                    else:
+                        somme_a = sum([data["a"]["votes"][i] for i in data["a"]["votes"]])
+                        somme_b = sum([data["b"]["votes"][i] for i in data["b"]["votes"]])
+                        rdm = round(1 + (somme_a / somme_b), 2) if somme_b > 0 else 1.1
+
                     for v in votes:
                         user = ctx.guild.get_member(v)
                         if user:
