@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import operator
 import random
 import re
 import string
@@ -10,7 +9,7 @@ from datetime import datetime, timedelta
 
 import discord
 from discord.errors import HTTPException
-from typing import Union, List, Optional, Literal, Tuple
+from typing import Union, List, Tuple
 from redbot.core import Config, commands, checks
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.chat_formatting import box, humanize_number, humanize_timedelta
@@ -119,8 +118,6 @@ class Cash(commands.Cog):
         self.config.register_member(**default_member)
         self.config.register_guild(**default_guild)
         self.config.register_global(**default_global)
-
-        self.cache = {}
 
     async def get_currency(self, guild: discord.Guild) -> str:
         """Obtenir le symbole de la monnaie du serveur"""

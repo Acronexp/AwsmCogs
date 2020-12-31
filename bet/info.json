@@ -1,0 +1,11 @@
+{
+    "author": ["Acrone"],
+	"description": "Système de paris exploitant l'économie alternative du module Cash inspiré de Twitch",
+	"install_msg": "Merci d'avoir installé ce module. Consultez `[p]help` pour voir les commandes disponibles",
+	"short": "Système simplifié de paris",
+	"tags": ["economy", "community", "fun"],
+    "required_cogs": {
+        "cash": "https://github.com/Acronexp/AwsmCogs"
+    },
+	"type": "COG"
+}

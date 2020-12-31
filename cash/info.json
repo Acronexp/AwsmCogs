@@ -1,0 +1,8 @@
+{
+	"author": ["Acrone"],
+	"description": "Economie virtuelle différente de celle offerte par Red",
+	"install_msg": "Merci d'avoir installé ce module. Consultez `[p]help` pour voir les commandes disponibles",
+	"short": "Economie virtuelle dérivée de celle de Red",
+	"tags": ["economy", "fun"],
+	"type": "COG"
+}
