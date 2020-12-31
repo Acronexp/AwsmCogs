@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 
 import discord
 from discord.errors import HTTPException
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Literal
 from redbot.core import Config, commands, checks
+from redbot.core.utils import AsyncIter
 from redbot.core.utils.menus import start_adding_reactions
 from redbot.core.utils.chat_formatting import box, humanize_number, humanize_timedelta
 from tabulate import tabulate
@@ -792,3 +793,12 @@ class Cash(commands.Cog):
         if reaction.message.guild:
             if not author.bot:
                 await self.manage_presence_bonus(author)
+
+    async def red_delete_data_for_user(
+        self, *, requester: Literal["discord", "owner", "user", "user_strict"], user_id: int
+    ):
+        await self.config.user_from_id(user_id).clear()
+        all_members = await self.config.all_members()
+        async for guild_id, guild_data in AsyncIter(all_members.items(), steps=100):
+            if user_id in guild_data:
+                await self.config.member_from_ids(guild_id, user_id).clear()

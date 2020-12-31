@@ -521,3 +521,7 @@ class Hex(commands.Cog):
             await ctx.send(txt)
         else:
             await ctx.send("**Cache vide**")
+
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete."""
+        return

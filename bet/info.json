@@ -7,5 +7,6 @@
     "required_cogs": {
         "cash": "https://github.com/Acronexp/AwsmCogs"
     },
-	"type": "COG"
+	"type": "COG",
+	"end_user_data_statement": "This cog stores no user data // Ce module ne stocke aucune donnée de membre"
 }

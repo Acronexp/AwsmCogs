@@ -284,3 +284,7 @@ class Bet(commands.Cog):
         else:
             await ctx.send(
                 f"{ctx.author.mention} **Aucun pari en cours** • Un modérateur peut en lancer un avec `bet new`")
+
+    async def red_delete_data_for_user(self, **kwargs):
+        """Nothing to delete."""
+        return
