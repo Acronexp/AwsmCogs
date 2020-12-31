@@ -182,8 +182,8 @@ class Bet(commands.Cog):
                 choix = "A" if choix in ["A", "1"] else "B"
                 if not data["votes_open"]:
                     em = await self.get_bet_embed(channel, f"Le choix {choix} remporte le pari !", choix)
+                    await ctx.send(embed=em)
                     betmsg = await channel.fetch_message(data["betmsg"])
-                    await betmsg.edit(embed=em)
 
                     votes = data[choix.lower()]["votes"]
                     somme_a = sum([data["a"]["votes"][i] for i in data["a"]["votes"]])
