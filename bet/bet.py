@@ -1,9 +1,10 @@
 import asyncio
 import logging
 import time
+from datetime import datetime
 
 import discord
-from typing import Union, List, Tuple
+from typing import Union
 from redbot.core import Config, commands, checks, errors
 from redbot.core.utils.chat_formatting import box, humanize_number
 from tabulate import tabulate
@@ -126,7 +127,7 @@ class Bet(commands.Cog):
         if not await self.get_bet(channel):
             tdelta = await cash.utils_parse_timedelta(votes)
             if len(title) > 1 and len(choix_1) > 0 and len(choix_2) > 0 and tdelta:
-                timestamp = time.time() + tdelta
+                timestamp = (datetime.now() + tdelta).timestamp()
                 try:
                     data = await self.gen_new_bet(channel, choix_1, choix_2, timestamp, title)
                 except ValueError:
