@@ -247,7 +247,7 @@ class Bet(commands.Cog):
 
                             betmsg = await channel.fetch_message(data["betmsg"])
                             await betmsg.edit(embed=await self.get_bet_embed(
-                                channel, "Les votes sont fermés | Résultat en attente..."))
+                                channel, "Votes ouverts ! Faîtes 'bet A|B <somme>' pour parier !"))
                         else:
                             await ctx.send(f"{ctx.author.mention} **Impossible** • Fonds insuffisants dans votre compte")
                     else:
@@ -267,7 +267,7 @@ class Bet(commands.Cog):
 
                                 betmsg = await channel.fetch_message(data["betmsg"])
                                 await betmsg.edit(embed=await self.get_bet_embed(
-                                    channel, "Les votes sont fermés | Résultat en attente..."))
+                                    channel, "Votes ouverts ! Faîtes 'bet A|B <somme>' pour parier !"))
                             else:
                                 await ctx.send(
                                     f"{ctx.author.mention} **Impossible** • Fonds insuffisants dans votre compte")
