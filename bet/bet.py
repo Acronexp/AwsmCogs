@@ -75,12 +75,12 @@ class Bet(commands.Cog):
             somme_b = sum([data["b"]["votes"][i] for i in data["b"]["votes"]])
             nb_b = len(data["b"]["votes"])
 
-            rdm_a = round(1 + (somme_b / somme_a), 2)
-            rdm_b = round(1 + (somme_a / somme_b), 2)
+            rdm_a = round(1 + (somme_b / somme_a), 2) if somme_a > 0 else 1.1
+            rdm_b = round(1 + (somme_a / somme_b), 2) if somme_b > 0 else 1.1
 
             totalvotes = nb_a + nb_b
-            prc_a = round(nb_a / totalvotes * 100)
-            prc_b = round(nb_b / totalvotes * 100)
+            prc_a = round(nb_a / totalvotes * 100) if totalvotes > 0 else 0
+            prc_b = round(nb_b / totalvotes * 100) if totalvotes > 0 else 0
 
             tbla = [("Crédits misés", humanize_number(somme_a)),
                     ("Rendement", f'1:{rdm_a}'),
