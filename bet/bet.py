@@ -95,7 +95,7 @@ class Bet(commands.Cog):
                     ("Rendement", f'1:{rdm_b}'),
                     ("Votants", f'{nb_b} [{prc_b}%]')]
 
-            choicetxt_b = data['a']['choice']
+            choicetxt_b = data['b']['choice']
             if winner and winner.lower() != 'b':
                 choicetxt_b = f'~~{choicetxt_b}~~'
             em.add_field(name=f"**B** · {choicetxt_b}", value=box(tabulate(tblb, tablefmt="plain")))
