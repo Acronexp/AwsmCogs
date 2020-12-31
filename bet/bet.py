@@ -111,7 +111,7 @@ class Bet(commands.Cog):
     async def _bet_main(self, ctx, choix: str):
         """Commandes de gestion du compte bancaire virtuel *Cash*"""
         if ctx.invoked_subcommand is None:
-            return await ctx.invoke(self.show_bank, user=user)
+            return await ctx.invoke(self.vote_bet, choix)
 
     @_bet_main.command(name="new")
     @checks.admin_or_permissions(manage_messages=True)
