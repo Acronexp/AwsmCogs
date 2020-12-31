@@ -108,7 +108,7 @@ class Bet(commands.Cog):
         """Commandes de gestion des paris"""
 
     @commands.group(name="bet", invoke_without_command=True)
-    async def _bet_main(self, ctx, choix: str):
+    async def _bet_main(self, ctx, choix: str, somme: int):
         """Commandes de gestion du compte bancaire virtuel *Cash*"""
         if ctx.invoked_subcommand is None:
             return await ctx.invoke(self.vote_bet, choix)
