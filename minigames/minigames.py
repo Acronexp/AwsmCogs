@@ -38,8 +38,8 @@ class MiniGames(commands.Cog):
         curr = await cash.get_currency(ctx.guild)
 
         if not mise:
-            tbl = [("🍎🍊🍋🍒🍉", "x2", "Mise + 50"),
-                   ("🍎🍊🍋🍒🍉", "x3", "Mise x3"),
+            tbl = [("🍒", "x2", "Mise + 50"),
+                   ("🍒", "x3", "Mise x3"),
                    ("🍀", "x2", "Mise + 200"),
                    ("🍀", "x3", "Mise x5"),
                    ("💎", "x2", "Mise x10"),
