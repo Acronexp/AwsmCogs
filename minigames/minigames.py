@@ -97,10 +97,10 @@ class MiniGames(commands.Cog):
                     elif count("🍀") == 2:
                         delta = mise + 200
                         txt = "2x 🍀 · Vous gagnez {}"
-                    elif fruitcount == 3:
+                    elif fruitcount() == 3:
                         delta = mise * 3
                         txt = "3x fruit · Vous gagnez {}"
-                    elif fruitcount == 2:
+                    elif fruitcount() == 2:
                         delta = mise + 50
                         txt = "2x fruit · Vous gagnez {}"
                     elif anyfruit == 3:
