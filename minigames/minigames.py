@@ -47,9 +47,9 @@ class MiniGames(commands.Cog):
                    ("⚡", "<3", "Mise perdue"),
                    ("⚡", "x3", "Mise x50")]
             em = discord.Embed(title="Combinaisons possibles",
-                               description=box(tabulate(tbl, headers=("Emoji(s)", "Nb.", "Gain"))),
+                               description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
                                color=await ctx.embed_color())
-            em.set_footer(text=f"La mise doit être comprise entre 5 et 100 {curr}")
+            em.set_footer(text=f"🍒 = Fruit · La mise doit être comprise entre 5 et 100 {curr}")
             return await ctx.send(embed=em)
 
         if 5 <= mise <= 100:
