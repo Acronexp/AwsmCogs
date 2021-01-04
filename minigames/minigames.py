@@ -58,8 +58,8 @@ class MiniGames(commands.Cog):
                 async with ctx.channel.typing():
                     delta = 0
 
-                    col = ["🍎", "🍊", "🍋", "🍒", "🍉", "⚡", "💎", "🍀"]
-                    fruits = ["🍎", "🍊", "🍋", "🍒", "🍉"]
+                    col = ["🍎", "🍊", "🍋", "🍒", "⚡", "💎", "🍀"]
+                    fruits = ["🍎", "🍊", "🍋", "🍒"]
                     col = col[-3:] + col + col[:3]
                     cols = []
                     mid = []
