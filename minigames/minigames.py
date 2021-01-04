@@ -38,8 +38,8 @@ class MiniGames(commands.Cog):
         curr = await cash.get_currency(ctx.guild)
 
         if not mise:
-            tbl = [("fruit", "x2", "Mise + 50"),
-                   ("fruit", "x3", "Mise x3"),
+            tbl = [("🍎🍊🍋🍒🍉", "x2", "Mise + 50"),
+                   ("🍎🍊🍋🍒🍉", "x3", "Mise x3"),
                    ("🍀", "x2", "Mise + 200"),
                    ("🍀", "x3", "Mise x5"),
                    ("💎", "x2", "Mise x10"),
@@ -47,7 +47,7 @@ class MiniGames(commands.Cog):
                    ("⚡", "<3", "Mise perdue"),
                    ("⚡", "x3", "Mise x50")]
             em = discord.Embed(title="Combinaisons possibles",
-                               description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
+                               description=box(tabulate(tbl, headers=("Emoji(s)", "Nb.", "Gain"))),
                                color=await ctx.embed_color())
             em.set_footer(text=f"La mise doit être comprise entre 5 et 100 {curr}")
             return await ctx.send(embed=em)
