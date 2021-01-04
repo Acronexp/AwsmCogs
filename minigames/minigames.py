@@ -67,9 +67,9 @@ class MiniGames(commands.Cog):
                         cols.append((col[n-1], col[n], col[n+1]))
                         mid.append(col[n])
 
-                    aff = "{a[0]}|{b[0]}|{c[0]}\n" \
-                          "{a[1]}|{b[1]}|{c[1]} <=\n" \
-                          "{a[2]}|{b[2]}|{c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
+                    aff = "{a[0]} | {b[0]} | {c[0]}\n" \
+                          "{a[1]} | {b[1]} | {c[1]} <=\n" \
+                          "{a[2]} | {b[2]} | {c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
                     count = lambda e: mid.count(e)
 
                     def fruitcount():
@@ -113,7 +113,7 @@ class MiniGames(commands.Cog):
                         await cash.remove_credits(author, mise)
                     await cash.add_log(author, "Machine à sous", ope)
 
-                em = discord.Embed(description=box(aff), color=author.color)
+                em = discord.Embed(description=aff, color=author.color)
                 em.set_author(name=author, icon_url=author.avatar_url)
                 em.set_footer(text=txt.format(f"{delta} {curr}"))
                 await ctx.send(embed=em)
