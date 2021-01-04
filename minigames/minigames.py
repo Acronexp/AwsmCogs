@@ -45,11 +45,12 @@ class MiniGames(commands.Cog):
                    ("💎", "x2", "Mise x10"),
                    ("💎", "x3", "Mise x30"),
                    ("⚡", "<3", "Mise perdue"),
-                   ("⚡", "x3", "Mise x50")]
+                   ("⚡", "x3", "Mise x50"),
+                   ("Fruits", "x3", "Remboursement")]
             em = discord.Embed(title="Combinaisons possibles",
                                description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
                                color=await ctx.embed_color())
-            em.set_footer(text=f"🍒 = Fruit · La mise doit être comprise entre 5 et 100 {curr}")
+            em.set_footer(text=f"🍒 = Même fruit · La mise doit être comprise entre 5 et 100 {curr}")
             return await ctx.send(embed=em)
 
         if 5 <= mise <= 100:
@@ -67,10 +68,11 @@ class MiniGames(commands.Cog):
                         cols.append((col[n-1], col[n], col[n+1]))
                         mid.append(col[n])
 
-                    aff = "{a[0]} | {b[0]} | {c[0]}\n" \
-                          "{a[1]} | {b[1]} | {c[1]} <= \n" \
-                          "{a[2]} | {b[2]} | {c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
+                    aff = "{a[0]}|{b[0]}|{c[0]}\n" \
+                          "{a[1]}|{b[1]}|{c[1]} <= \n" \
+                          "{a[2]}|{b[2]}|{c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
                     count = lambda e: mid.count(e)
+                    anyfruit = len([i for i in mid if i in fruits])
 
                     def fruitcount():
                         for f in fruits:
@@ -101,6 +103,9 @@ class MiniGames(commands.Cog):
                     elif fruitcount == 2:
                         delta = mise + 50
                         txt = "2x fruit · Vous gagnez {}"
+                    elif anyfruit == 3:
+                        delta = mise
+                        txt = "3x fruits · Vous êtes remboursé"
                     else:
                         txt = "Rien · Vous perdez votre mise"
 
@@ -109,11 +114,12 @@ class MiniGames(commands.Cog):
                     ope = delta - mise
                     if ope > 0:
                         await cash.deposit_credits(author, ope)
+                        await cash.add_log(author, "Machine à sous", ope)
                     elif ope < 0:
                         await cash.remove_credits(author, mise)
-                    await cash.add_log(author, "Machine à sous", ope)
+                        await cash.add_log(author, "Machine à sous", ope)
 
-                em = discord.Embed(description=f"**Mise :** {mise} {curr}\n\n" + box(aff), color=author.color)
+                em = discord.Embed(description=f"**Mise :** {mise} {curr}\n" + box(aff), color=author.color)
                 em.set_author(name=author, icon_url=author.avatar_url)
                 em.set_footer(text=txt.format(f"{delta} {curr}"))
                 await ctx.send(embed=em)
