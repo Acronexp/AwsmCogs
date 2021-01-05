@@ -171,7 +171,7 @@ class MiniGames(commands.Cog):
                     after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
                                   box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
                                   "Egalité ! Vous ne perdez pas votre mise")
-                    await msg.edit(embed=after)
+                    return await msg.edit(embed=after)
 
                 if emoji == "➕":
                     if sum(user_dices) > sum(bot_dices):
