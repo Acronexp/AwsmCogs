@@ -141,13 +141,18 @@ class MiniGames(commands.Cog):
             if await cash.enough_balance(author, mise):
                 user_dices = [random.randint(1, 6), random.randint(1, 6)]
                 bot_dices = [random.randint(1, 6), random.randint(1, 6)]
-                emdict = {"color": author.color.value,
-                          "author": {"name": "🎲 " + str(author), "icon_url": author.avatar_url},
-                          "fields": [
-                              {"name": "Votre lancé", "value": box(f"🎲 {min(user_dices)} ")},
-                              {"name": "Mon lancé", "value": box(f"🎲 {max(bot_dices)} ")}],
-                          "footer": {"text": "Allez-vous avoir plus ou moins que moi avec le prochain lancé ?"}}
-                msg = await ctx.send(embed=discord.Embed().from_dict(emdict))
+
+                def affem(userval, botval, footer):
+                    em = discord.Embed(color=author.color)
+                    em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
+                    em.add_field(name="Votre lancé", value=userval)
+                    em.add_field(name="Mon lancé", value=botval)
+                    em.set_footer(text=footer)
+                    return em
+
+                before = affem(box(f"🎲 {min(user_dices)} "), box(f"🎲 {max(bot_dices)} "),
+                               "Allez-vous avoir plus ou moins que moi avec le prochain lancé ?")
+                msg = await ctx.send(embed=before)
                 emojis = ["➕", "➖"]
 
                 start_adding_reactions(msg, emojis)
@@ -160,36 +165,43 @@ class MiniGames(commands.Cog):
                 else:
                     emoji = react.emoji
 
-                emdict["fields"][0]["value"] = box(f"🎲 {min(user_dices)}, {max(user_dices)} ")
-                emdict["fields"][1]["value"] = box(f"🎲 {max(bot_dices)}, {min(bot_dices)} ")
-
                 if sum(user_dices) == sum(bot_dices):
-                    emdict["footer"]["text"] = f"Egalité ! Vous ne perdez pas votre mise"
-                    await msg.edit(embed=discord.Embed().from_dict(emdict))
+                    after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
+                                  box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                                  "Egalité ! Vous ne perdez pas votre mise")
+                    await msg.edit(embed=after)
 
                 await msg.delete()
                 if emoji == "➕":
                     if sum(user_dices) > sum(bot_dices):
-                        emdict["footer"]["text"] = f"Bravo ! Vous gagnez {mise} {curr}"
                         await cash.deposit_credits(author, mise)
                         await cash.add_log(author, "Gain aux dés", mise)
-                        await msg.edit(embed=discord.Embed().from_dict(emdict))
+                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
+                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                                      f"Gagné ! Vous gagnez {mise} {curr}")
+                        await msg.edit(embed=after)
                     else:
-                        emdict["footer"]["text"] = f"Loupé ! Vous perdez votre mise"
                         await cash.remove_credits(author, mise)
                         await cash.add_log(author, "Perte aux dés", -mise)
-                        await msg.edit(embed=discord.Embed().from_dict(emdict))
+                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
+                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                                      f"Perdu ! Vous avez perdu votre mise")
+                        await msg.edit(embed=after)
                 else:
                     if sum(user_dices) < sum(bot_dices):
-                        emdict["footer"]["text"] = f"Bravo ! Vous gagnez {mise} {curr}"
                         await cash.deposit_credits(author, mise)
                         await cash.add_log(author, "Gain aux dés", mise)
-                        await msg.edit(embed=discord.Embed().from_dict(emdict))
+                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
+                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                                      f"Gagné ! Vous gagnez {mise} {curr}")
+                        await msg.edit(embed=after)
                     else:
-                        emdict["footer"]["text"] = f"Loupé ! Vous perdez votre mise"
                         await cash.remove_credits(author, mise)
                         await cash.add_log(author, "Perte aux dés", -mise)
-                        await msg.edit(embed=discord.Embed().from_dict(emdict))
+                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
+                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                                      f"Perdu ! Vous avez perdu votre mise")
+                        await msg.edit(embed=after)
             else:
                 await ctx.send("**Fonds insuffisants** • Vous n'avez pas cette somme sur votre compte")
         else:
