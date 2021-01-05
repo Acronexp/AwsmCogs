@@ -141,19 +141,21 @@ class MiniGames(commands.Cog):
 
         if 5 <= mise <= 100:
             if await cash.enough_balance(author, mise):
-                user_dices = [random.randint(1, 6), random.randint(1, 6)]
-                bot_dices = [random.randint(1, 6), random.randint(1, 6)]
+                async with ctx.channel.typing():
+                    user_dices = [random.randint(1, 6), random.randint(1, 6)]
+                    bot_dices = [random.randint(1, 6), random.randint(1, 6)]
+                    await asyncio.sleep(1.5)
 
-                def affem(userval, botval, footer):
-                    em = discord.Embed(color=author.color)
-                    em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
-                    em.add_field(name="Vous", value=userval)
-                    em.add_field(name=self.bot.user.name, value=botval)
-                    em.set_footer(text=footer)
-                    return em
+                    def affem(userval, botval, footer):
+                        em = discord.Embed(color=author.color)
+                        em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
+                        em.add_field(name="Vous", value=userval)
+                        em.add_field(name=self.bot.user.name, value=botval)
+                        em.set_footer(text=footer)
+                        return em
 
-                before = affem(box(f"🎲 {min(user_dices)} "), box(f"🎲 {max(bot_dices)} "),
-                               "Allez-vous avoir plus ou moins que moi avec le prochain lancé ?")
+                    before = affem(box(f"🎲 {min(user_dices)} "), box(f"🎲 {max(bot_dices)} "),
+                                   "Allez-vous avoir plus ou moins que moi avec le prochain lancé ?")
                 msg = await ctx.send(embed=before)
                 emojis = ["➕", "➖"]
 
