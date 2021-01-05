@@ -47,8 +47,7 @@ class MiniGames(commands.Cog):
                    ("💎", "x2", "Mise x10"),
                    ("💎", "x3", "Mise x30"),
                    ("⚡", "<3", "Mise perdue"),
-                   ("⚡", "x3", "Mise x50"),
-                   ("Fruits", "x3", "Remboursement")]
+                   ("⚡", "x3", "Mise x50")]
             em = discord.Embed(title="Combinaisons possibles",
                                description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
                                color=await ctx.embed_color())
@@ -118,7 +117,7 @@ class MiniGames(commands.Cog):
                         await cash.add_log(author, "Machine à sous", ope)
 
                 em = discord.Embed(description=f"**Mise :** {mise} {curr}\n" + box(aff), color=author.color)
-                em.set_author(name="🎰 " + author, icon_url=author.avatar_url)
+                em.set_author(name="🎰 " + str(author), icon_url=author.avatar_url)
                 em.set_footer(text=txt.format(f"{delta} {curr}"))
                 await ctx.send(embed=em)
             else:
@@ -143,7 +142,7 @@ class MiniGames(commands.Cog):
                 user_dices = [random.randint(1, 6), random.randint(1, 6)]
                 bot_dices = [random.randint(1, 6), random.randint(1, 6)]
                 emdict = {"color": author.color,
-                          "author": {"name": "🎲 " + author, "icon_url": author.avatar_url},
+                          "author": {"name": "🎲 " + str(author), "icon_url": author.avatar_url},
                           "fields": [
                               {"name": "Votre lancé", "value": box(f"🎲 {min(user_dices)} ")},
                               {"name": "Mon lancé", "value": box(f"🎲 {max(bot_dices)} ")}],
