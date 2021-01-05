@@ -141,7 +141,7 @@ class MiniGames(commands.Cog):
             if await cash.enough_balance(author, mise):
                 user_dices = [random.randint(1, 6), random.randint(1, 6)]
                 bot_dices = [random.randint(1, 6), random.randint(1, 6)]
-                emdict = {"color": author.color,
+                emdict = {"color": author.color.value,
                           "author": {"name": "🎲 " + str(author), "icon_url": author.avatar_url},
                           "fields": [
                               {"name": "Votre lancé", "value": box(f"🎲 {min(user_dices)} ")},
