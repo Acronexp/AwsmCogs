@@ -126,6 +126,8 @@ class MiniGames(commands.Cog):
             await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 5 et 100 {curr}")
 
     @commands.command()
+    @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.member)
     async def guess(self, ctx, mise: int):
         """Avez vous plus ou moins que la somme des dés tirés ?
 
@@ -145,8 +147,8 @@ class MiniGames(commands.Cog):
                 def affem(userval, botval, footer):
                     em = discord.Embed(color=author.color)
                     em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
-                    em.add_field(name="Votre lancé", value=userval)
-                    em.add_field(name="Mon lancé", value=botval)
+                    em.add_field(name="Vous", value=userval)
+                    em.add_field(name=self.bot.user.name, value=botval)
                     em.set_footer(text=footer)
                     return em
 
@@ -171,7 +173,6 @@ class MiniGames(commands.Cog):
                                   "Egalité ! Vous ne perdez pas votre mise")
                     await msg.edit(embed=after)
 
-                await msg.delete()
                 if emoji == "➕":
                     if sum(user_dices) > sum(bot_dices):
                         await cash.deposit_credits(author, mise)
