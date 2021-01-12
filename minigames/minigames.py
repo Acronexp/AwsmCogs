@@ -17,6 +17,7 @@ from tabulate import tabulate
 
 logger = logging.getLogger("red.AwsmCogs.minigames")
 
+
 class MiniGames(commands.Cog):
     """Mini-jeux exploitant l'économie du module Cash"""
 
@@ -125,10 +126,10 @@ class MiniGames(commands.Cog):
         else:
             await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 5 et 100 {curr}")
 
-    @commands.command()
+    @commands.command(aliases=["des"])
     @commands.guild_only()
     @commands.cooldown(1, 5, commands.BucketType.member)
-    async def guess(self, ctx, mise: int):
+    async def dices(self, ctx, mise: int):
         """Avez vous plus ou moins que la somme des dés tirés ?
 
         Vous devez deviner si vous aurez plus ou moins en additionnant vos deux lancés.
@@ -209,3 +210,4 @@ class MiniGames(commands.Cog):
                 await ctx.send("**Fonds insuffisants** • Vous n'avez pas cette somme sur votre compte")
         else:
             await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 5 et 100 {curr}")
+
