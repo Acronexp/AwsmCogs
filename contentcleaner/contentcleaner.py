@@ -38,7 +38,7 @@ class ContentCleaner(commands.Cog):
             raise
         return path
 
-    @commands.group(name="contentcleaner", aliases=["cc"])
+    @commands.group(name="contentcleaner", aliases=["cclean"])
     async def _content_cleaner(self, ctx):
         """Commandes de gestion des triggers de correction auto. de liens et contenus"""
 
