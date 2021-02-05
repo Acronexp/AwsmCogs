@@ -123,7 +123,7 @@ class RemindMe(commands.Cog):
             tmstamp += 1
         reminder = {'text': text, 'start': datetime.now().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
-        time = datetime.utcfromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
+        time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
         await ctx.send(f"**Rappel ajouté** » Votre rappel est prévu pour *{time}*.")
 
     @_manage_reminders.command(name='del')
