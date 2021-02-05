@@ -106,7 +106,7 @@ class RemindMe(commands.Cog):
         if ctx.invoked_subcommand is None:
             return await ctx.invoke(self.create_reminder, time=time, text=text)
 
-    @commands.command(name='new')
+    @_manage_reminders.command(name='new')
     async def create_reminder(self, ctx, time: str, *, text: str):
         """Créer un rappel
 
@@ -126,7 +126,7 @@ class RemindMe(commands.Cog):
         time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
         await ctx.send(f"**Rappel ajouté** » Votre rappel est prévu pour *{time}*.")
 
-    @commands.command(name='delete', alises=['del'])
+    @_manage_reminders.command(name='delete', alises=['del'])
     async def delete_reminder(self, ctx, num: int = None):
         """Supprimer un rappel
 
@@ -155,7 +155,7 @@ class RemindMe(commands.Cog):
         else:
             await ctx.send("**Nombre invalide** » Faîtes la commande sans nombre pour obtenir une liste des rappels")
 
-    @commands.command(name='list')
+    @_manage_reminders.command(name='list')
     async def list_reminders(self, ctx):
         """Lister les rappels actifs"""
         author = ctx.author
