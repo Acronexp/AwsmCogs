@@ -123,6 +123,8 @@ class RemindMe(commands.Cog):
             tmstamp += 1
         reminder = {'text': text, 'start': datetime.utcnow().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
+        time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
+        await ctx.send(f"**Rappel ajouté** » Votre rappel est prévu pour *{time}*.")
 
     @commands.command(name='delete', alises=['del'])
     async def delete_reminder(self, ctx, num: int = None):
