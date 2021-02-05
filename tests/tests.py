@@ -15,11 +15,12 @@ class Tests(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def multiplemembers(self, ctx, *members: Members):
+    async def multiplemembers(self, ctx):
         """Teste la détection de plusieurs membres dans une commande"""
+        members = ctx.message.mentions
         if members:
             txt = ""
-            for p in members:
-                txt += f"{p.name}\n"
+            for m in members:
+                txt += f"{m}\n"
             return await ctx.send(txt)
-        await ctx.send("**Rien à afficher**")
+        await ctx.send("Vide")
