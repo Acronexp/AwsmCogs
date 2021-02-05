@@ -1,32 +1,18 @@
-import asyncio
 import logging
-import random
 import re
-import string
-import time
 from copy import copy
 from datetime import datetime, timedelta
 
 import discord
-from discord.errors import HTTPException
-from typing import Union, List, Tuple, Literal
+from typing import Union
 
 from discord.ext import tasks
-from redbot.core import Config, commands, checks
-from redbot.core.utils import AsyncIter
-from redbot.core.utils.menus import start_adding_reactions
-from redbot.core.utils.chat_formatting import box, humanize_number, humanize_timedelta
-from tabulate import tabulate
+from redbot.core import Config, commands
 
-logger = logging.getLogger("red.AwsmCogs.wingman")
+logger = logging.getLogger("red.AwsmCogs.remindme")
 
-
-class WingmanError(Exception):
-    """Classe de base pour les erreurs Wingman"""
-
-
-class Wingman(commands.Cog):
-    """Assistant personnel intégré au bot"""
+class RemindMe(commands.Cog):
+    """Système de rappels"""
 
     def __init__(self, bot):
         super().__init__()
@@ -37,17 +23,17 @@ class Wingman(commands.Cog):
         self.config.register_user(**default_user)
 
         self.reminders_cache = {}
-        self.wingman_loop.start()
+        self.remindme_loop.start()
 
 
     @tasks.loop(minutes=1.0)
-    async def wingman_loop(self):
+    async def remindme_loop(self):
         """Boucle pour toutes les actions automatiques de Wingman"""
         await self.check_reminders()
 
-    @wingman_loop.before_loop
-    async def before_wingman_loop(self):
-        logger.info('Starting wingman loop...')
+    @remindme_loop.before_loop
+    async def before_remindme_loop(self):
+        logger.info('Starting remindme loop...')
         await self.bot.wait_until_ready()
         await self.cache_reminders()
 
