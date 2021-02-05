@@ -37,6 +37,8 @@ class RemindMe(commands.Cog):
         await self.bot.wait_until_ready()
         await self.cache_reminders()
 
+    def cog_unload(self):
+        self.reminders_cache = {}
 
     async def add_reminder(self, user: Union[discord.User, discord.Member], reminder: dict):
         """Ajouter un reminder à un utilisateur"""
@@ -75,7 +77,8 @@ class RemindMe(commands.Cog):
                 if reminder['end'] <= datetime.now().timestamp():
                     user = self.bot.get_user(user_id)
                     if user:
-                        em = discord.Embed(title="🔔 Rappel", description=reminder['text'], color=0xffac33)
+                        em = discord.Embed(title="🔔 Rappel", description=reminder['text'], color=0xffac33,
+                                           timestamp=datetime.fromtimestamp(reminder['end']))
                         try:
                             await user.send(embed=em)
                         except:
