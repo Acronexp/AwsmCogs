@@ -7,8 +7,8 @@ logger = logging.getLogger("red.AwsmCogs.tests")
 
 Members = NewType('Members', Tuple[discord.Member])
 
-class Dungeon(commands.Cog):
-    """Jeu de donjons procéduraux en équipe (ou solo)"""
+class Tests(commands.Cog):
+    """Différents tests"""
 
     def __init__(self, bot):
         super().__init__()
