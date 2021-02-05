@@ -15,7 +15,7 @@ class Tests(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def multiplemembers(self, ctx):
+    async def mmembers(self, ctx):
         """Teste la détection de plusieurs membres dans une commande"""
         members = ctx.message.mentions
         if members:
