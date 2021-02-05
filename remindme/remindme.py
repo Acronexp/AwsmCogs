@@ -72,7 +72,7 @@ class RemindMe(commands.Cog):
         cache = copy(self.reminders_cache)
         for user_id, reminders in list(cache.items()):
             for reminder in reminders:
-                if reminder['end'] <= datetime.utcnow().timestamp():
+                if reminder['end'] <= datetime.now().timestamp():
                     user = self.bot.get_user(user_id)
                     if user:
                         em = discord.Embed(title="🔔 Rappel", description=reminder['text'], color=0xffac33)
@@ -114,25 +114,25 @@ class RemindMe(commands.Cog):
         author = ctx.author
         try:
             tmdelta = self.parse_timedelta(time)
-            tmstamp = (datetime.utcnow() + tmdelta).timestamp()
+            tmstamp = (datetime.now() + tmdelta).timestamp()
         except Exception as e:
             return await ctx.send(f"**Erreur** » `{e}`")
 
         all_reminders = await self.config.user(author).reminders()
         while tmstamp in all_reminders:
             tmstamp += 1
-        reminder = {'text': text, 'start': datetime.utcnow().timestamp(), 'end': tmstamp}
+        reminder = {'text': text, 'start': datetime.now().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
-        time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
+        time = datetime.utcfromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
         await ctx.send(f"**Rappel ajouté** » Votre rappel est prévu pour *{time}*.")
 
-    @_manage_reminders.command(name='delete', alises=['del'])
+    @_manage_reminders.command(name='del')
     async def delete_reminder(self, ctx, num: int = None):
         """Supprimer un rappel
 
         Faire la commande sans nombre permet d'obtenir une liste des rappels en attente"""
         author = ctx.author
-        reminders = self.reminders_cache.get(author, [])
+        reminders = self.reminders_cache.get(author.id, [])
         if not num:
             if reminders:
                 text = ""
@@ -159,7 +159,7 @@ class RemindMe(commands.Cog):
     async def list_reminders(self, ctx):
         """Lister les rappels actifs"""
         author = ctx.author
-        reminders = self.reminders_cache.get(author, [])
+        reminders = self.reminders_cache.get(author.id, [])
         if reminders:
             text = ""
             n = 1
