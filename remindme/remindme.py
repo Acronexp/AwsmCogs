@@ -135,7 +135,7 @@ class RemindMe(commands.Cog):
                            timestamp=datetime.utcfromtimestamp(reminder['end']))
         base_em.set_author(name="Rappel ajouté", icon_url=author.avatar_url)
         if type(ctx.channel) == discord.TextChannel:
-            em = base_em
+            em = copy(base_em)
             em.set_footer(text="🔔 · Copier et ajouter le même rappel")
             msg = await ctx.send(embed=em)
             start_adding_reactions(msg, ("🔔"))
