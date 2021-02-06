@@ -81,8 +81,9 @@ class RemindMe(commands.Cog):
                 if reminder['end'] <= datetime.now().timestamp():
                     user = self.bot.get_user(user_id)
                     if user:
-                        em = discord.Embed(title="🔔 Votre rappel", description=reminder['text'], color=0xffac33,
+                        em = discord.Embed(description=reminder['text'], color=0xffac33,
                                            timestamp=datetime.utcfromtimestamp(reminder['end']))
+                        em.set_author(name="Rappel", icon_url="https://i.imgur.com/W37SOEU.png")
                         try:
                             await user.send(embed=em)
                         except:
