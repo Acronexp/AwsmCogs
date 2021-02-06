@@ -140,7 +140,7 @@ class RemindMe(commands.Cog):
             msg = await ctx.send(embed=em)
             start_adding_reactions(msg, ("🔔"))
             self.reminders_messages[msg.id] = {'author': author.id, 'reminder': reminder}
-            await asyncio.sleep(120)
+            await asyncio.sleep(60)
             try:
                 await msg.clear_reaction("🔔")
             except:
