@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 from copy import copy
@@ -8,6 +9,7 @@ from typing import Union
 
 from discord.ext import tasks
 from redbot.core import Config, commands
+from redbot.core.utils.menus import start_adding_reactions
 
 logger = logging.getLogger("red.AwsmCogs.remindme")
 
@@ -23,6 +25,7 @@ class RemindMe(commands.Cog):
         self.config.register_user(**default_user)
 
         self.reminders_cache = {}
+        self.reminders_messages = {}
         self.remindme_loop.start()
 
 
@@ -126,8 +129,19 @@ class RemindMe(commands.Cog):
             tmstamp += 1
         reminder = {'text': text, 'start': datetime.now().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
-        time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
-        await ctx.send(f"**Rappel ajouté** » Votre rappel est prévu pour *{time}*.")
+        txt = f"**Rappel ajouté :** {text}"
+        em = discord.Embed(title="Ajout de rappel", description=txt, color=0xffac33,
+                           timestamp=datetime.fromtimestamp(reminder['end']))
+        if type(ctx.channel) == discord.TextChannel:
+            em.set_footer(text="Cliquez sur 🔔 pour ajouter le même rappel")
+            msg = await ctx.send(embed=em)
+            start_adding_reactions(msg, ("🔔"))
+            self.reminders_messages[msg.id] = {'author': author.id, 'reminder': reminder}
+            await asyncio.sleep(30)
+            await msg.delete()
+            del self.reminders_messages[msg.id]
+        else:
+            await ctx.send(embed=em)
 
     @_manage_reminders.command(name='del')
     async def delete_reminder(self, ctx, num: int = None):
@@ -143,11 +157,11 @@ class RemindMe(commands.Cog):
                 for reminder in reminders:
                     time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                     text += f"**{n}.** {time} » *{reminder['text']}*\n"
-                em = discord.Embed(title="🔔 Liste des rappels", description=text, color=0xffac33)
+                em = discord.Embed(title="Effacer un rappel", description=text, color=0xffac33)
                 em.set_footer(text="Utilisez \";rm del <num>\" pour en effacer un")
                 await ctx.send(embed=em)
             else:
-                em = discord.Embed(title="🔔 Liste des rappels", description="Il n'y a aucun rappel en attente", color=0xffac33)
+                em = discord.Embed(title="Effacer un rappel", description="Il n'y a aucun rappel en attente", color=0xffac33)
                 em.set_footer(text="Utilisez \";rm <temps> [texte]\" pour en créer un")
                 await ctx.send(embed=em)
         elif num <= len(reminders):
@@ -169,10 +183,32 @@ class RemindMe(commands.Cog):
             for reminder in reminders:
                 time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                 text += f"**{n}.** {time} » *{reminder['text']}*\n"
-            em = discord.Embed(title="🔔 Liste des rappels actifs", description=text, color=0xffac33)
+            em = discord.Embed(title="Liste des rappels", description=text, color=0xffac33)
             await ctx.send(embed=em)
         else:
-            em = discord.Embed(title="🔔 Liste des rappels actifs", description="Il n'y a aucun rappel en attente",
+            em = discord.Embed(title="Liste des rappels", description="Il n'y a aucun rappel en attente",
                                color=0xffac33)
             em.set_footer(text="Utilisez \";rm <temps> [texte]\" pour en créer un")
             await ctx.send(embed=em)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        channel = self.bot.get_channel(payload.channel_id)
+        emoji = payload.emoji.name
+        if hasattr(channel, "guild"):
+            guild = channel.guild
+            if emoji == "🔔":
+                message = await channel.fetch_message(payload.message_id)
+                if message.id in self.reminders_messages:
+                    user = guild.get_member(payload.user_id)
+                    author, reminder = self.reminders_messages[message.id]['author'], \
+                                       self.reminders_messages[message.id]['reminder']
+                    if user.id != author:
+                        await self.add_reminder(user, reminder)
+                        txt = f"**Rappel ajouté :** {reminder['text']}"
+                        em = discord.Embed(title="Ajout de rappel (Copie)", description=txt, color=0xffac33,
+                                           timestamp=datetime.fromtimestamp(reminder['end']))
+                        try:
+                            await user.send(embed=em)
+                        except Exception as e:
+                            logger.info(e, exc_info=True)
