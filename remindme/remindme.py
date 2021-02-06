@@ -29,7 +29,7 @@ class RemindMe(commands.Cog):
         self.remindme_loop.start()
 
 
-    @tasks.loop(minutes=1.0)
+    @tasks.loop(seconds=30.0)
     async def remindme_loop(self):
         """Boucle pour toutes les actions automatiques de Wingman"""
         await self.check_reminders()
@@ -81,7 +81,7 @@ class RemindMe(commands.Cog):
                     user = self.bot.get_user(user_id)
                     if user:
                         em = discord.Embed(title="🔔 Rappel", description=reminder['text'], color=0xffac33,
-                                           timestamp=datetime.fromtimestamp(reminder['end']))
+                                           timestamp=datetime.utcfromtimestamp(reminder['end']))
                         try:
                             await user.send(embed=em)
                         except:
