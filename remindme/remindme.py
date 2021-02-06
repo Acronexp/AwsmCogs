@@ -157,6 +157,7 @@ class RemindMe(commands.Cog):
                 for reminder in reminders:
                     time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                     text += f"**{n}.** {time} » *{reminder['text']}*\n"
+                    n += 1
                 em = discord.Embed(title="Effacer un rappel", description=text, color=0xffac33)
                 em.set_footer(text="Utilisez \";rm del <num>\" pour en effacer un")
                 await ctx.send(embed=em)
@@ -183,6 +184,7 @@ class RemindMe(commands.Cog):
             for reminder in reminders:
                 time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                 text += f"**{n}.** {time} » *{reminder['text']}*\n"
+                n += 1
             em = discord.Embed(title="Liste des rappels", description=text, color=0xffac33)
             await ctx.send(embed=em)
         else:
