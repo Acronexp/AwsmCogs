@@ -130,10 +130,11 @@ class RemindMe(commands.Cog):
 
         reminder = {'text': text, 'start': datetime.now().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
-        em = discord.Embed(description=text, color=0xffac33,
+        base_em = discord.Embed(description=text, color=0xffac33,
                            timestamp=datetime.utcfromtimestamp(reminder['end']))
-        em.set_author(name="Rappel ajouté", icon_url=author.avatar_url)
+        base_em.set_author(name="Rappel ajouté", icon_url=author.avatar_url)
         if type(ctx.channel) == discord.TextChannel:
+            em = base_em
             em.set_footer(text="🔔 · Copier et ajouter le même rappel")
             msg = await ctx.send(embed=em)
             start_adding_reactions(msg, ("🔔"))
@@ -143,6 +144,7 @@ class RemindMe(commands.Cog):
                 await msg.clear_reaction("🔔")
             except:
                 pass
+            await msg.edit(embed=base_em)
             del self.reminders_messages[msg.id]
         else:
             await ctx.send(embed=em)
