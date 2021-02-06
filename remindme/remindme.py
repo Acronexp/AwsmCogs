@@ -131,7 +131,7 @@ class RemindMe(commands.Cog):
         await self.add_reminder(author, reminder)
         txt = f"**Rappel ajouté :** {text}"
         em = discord.Embed(title="Ajout de rappel", description=txt, color=0xffac33,
-                           timestamp=datetime.fromtimestamp(reminder['end']))
+                           timestamp=datetime.utcfromtimestamp(reminder['end']))
         if type(ctx.channel) == discord.TextChannel:
             em.set_footer(text="Cliquez sur 🔔 pour ajouter le même rappel")
             msg = await ctx.send(embed=em)
@@ -207,7 +207,7 @@ class RemindMe(commands.Cog):
                         await self.add_reminder(user, reminder)
                         txt = f"**Rappel ajouté :** {reminder['text']}"
                         em = discord.Embed(title="Ajout de rappel (Copie)", description=txt, color=0xffac33,
-                                           timestamp=datetime.fromtimestamp(reminder['end']))
+                                           timestamp=datetime.utcfromtimestamp(reminder['end']))
                         try:
                             await user.send(embed=em)
                         except Exception as e:
