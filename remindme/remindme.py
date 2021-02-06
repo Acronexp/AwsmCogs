@@ -124,6 +124,9 @@ class RemindMe(commands.Cog):
         except Exception as e:
             return await ctx.send(f"**Erreur** » `{e}`")
 
+        if tmstamp < datetime.now().timestamp() + 60:
+            return await ctx.send("**Temps trop court** » Le temps ne peut être inférieur à une minute")
+
         all_reminders = await self.config.user(author).reminders()
         while tmstamp in all_reminders:
             tmstamp += 1
