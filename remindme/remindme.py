@@ -148,7 +148,7 @@ class RemindMe(commands.Cog):
             await msg.edit(embed=base_em)
             del self.reminders_messages[msg.id]
         else:
-            await ctx.send(embed=em)
+            await ctx.send(embed=base_em)
 
     @_manage_reminders.command(name='del')
     async def delete_reminder(self, ctx, num: int = None):
