@@ -47,10 +47,11 @@ class RemindMe(commands.Cog):
         """Ajouter un reminder à un utilisateur"""
         if user.id not in self.reminders_cache:
             self.reminders_cache[user.id] = []
-        self.reminders_cache[user.id].append(reminder)
-        saved_reminders = await self.config.user(user).reminders()
-        saved_reminders.append(reminder)
-        await self.config.user(user).reminders.set(saved_reminders)
+        if reminder not in self.reminders_cache[user.id]:
+            self.reminders_cache[user.id].append(reminder)
+            saved_reminders = await self.config.user(user).reminders()
+            saved_reminders.append(reminder)
+            await self.config.user(user).reminders.set(saved_reminders)
 
     async def del_reminder(self, user: Union[discord.User, discord.Member], reminder: dict):
         """Retirer un reminder à un utilisateur"""
@@ -80,7 +81,7 @@ class RemindMe(commands.Cog):
                 if reminder['end'] <= datetime.now().timestamp():
                     user = self.bot.get_user(user_id)
                     if user:
-                        em = discord.Embed(title="🔔 Rappel", description=reminder['text'], color=0xffac33,
+                        em = discord.Embed(title="🔔 Votre rappel", description=reminder['text'], color=0xffac33,
                                            timestamp=datetime.utcfromtimestamp(reminder['end']))
                         try:
                             await user.send(embed=em)
@@ -127,14 +128,11 @@ class RemindMe(commands.Cog):
         if tmstamp < datetime.now().timestamp() + 60:
             return await ctx.send("**Temps trop court** » Le temps ne peut être inférieur à une minute")
 
-        all_reminders = await self.config.user(author).reminders()
-        while tmstamp in all_reminders:
-            tmstamp += 1
         reminder = {'text': text, 'start': datetime.now().timestamp(), 'end': tmstamp}
         await self.add_reminder(author, reminder)
-        txt = f"**Rappel ajouté :** {text}"
-        em = discord.Embed(title="Ajout de rappel", description=txt, color=0xffac33,
+        em = discord.Embed(description=text, color=0xffac33,
                            timestamp=datetime.utcfromtimestamp(reminder['end']))
+        em.set_author(name="Rappel ajouté", icon_url=author.avatar_url)
         if type(ctx.channel) == discord.TextChannel:
             em.set_footer(text="🔔 · Copier et ajouter le même rappel")
             msg = await ctx.send(embed=em)
@@ -164,11 +162,13 @@ class RemindMe(commands.Cog):
                     time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                     text += f"**{n}.** {time} » *{reminder['text']}*\n"
                     n += 1
-                em = discord.Embed(title="Effacer un rappel", description=text, color=0xffac33)
+                em = discord.Embed(description=text, color=0xffac33)
+                em.set_author(name="Effacer un rappel", icon_url=author.avatar_url)
                 em.set_footer(text="Utilisez \";rm del <num>\" pour en effacer un")
                 await ctx.send(embed=em)
             else:
-                em = discord.Embed(title="Effacer un rappel", description="Il n'y a aucun rappel en attente", color=0xffac33)
+                em = discord.Embed(description="Il n'y a aucun rappel en attente", color=0xffac33)
+                em.set_author(name="Effacer un rappel", icon_url=author.avatar_url)
                 em.set_footer(text="Utilisez \";rm <temps> [texte]\" pour en créer un")
                 await ctx.send(embed=em)
         elif num <= len(reminders):
@@ -191,11 +191,12 @@ class RemindMe(commands.Cog):
                 time = datetime.fromtimestamp(reminder['end']).strftime('%d/%m/%Y %H:%M')
                 text += f"**{n}.** {time} » *{reminder['text']}*\n"
                 n += 1
-            em = discord.Embed(title="Liste des rappels", description=text, color=0xffac33)
+            em = discord.Embed(description=text, color=0xffac33)
+            em.set_author(name="Liste de vos rappels", icon_url=author.avatar_url)
             await ctx.send(embed=em)
         else:
-            em = discord.Embed(title="Liste des rappels", description="Il n'y a aucun rappel en attente",
-                               color=0xffac33)
+            em = discord.Embed(description="Aucun rappel actif à afficher", color=0xffac33)
+            em.set_author(name="Liste de vos rappels", icon_url=author.avatar_url)
             em.set_footer(text="Utilisez \";rm <temps> [texte]\" pour en créer un")
             await ctx.send(embed=em)
 
@@ -213,9 +214,9 @@ class RemindMe(commands.Cog):
                                        self.reminders_messages[message.id]['reminder']
                     if user.id != author:
                         await self.add_reminder(user, reminder)
-                        txt = f"**Rappel ajouté :** {reminder['text']}"
-                        em = discord.Embed(title="Ajout de rappel (Copie)", description=txt, color=0xffac33,
+                        em = discord.Embed(description=reminder['text'], color=0xffac33,
                                            timestamp=datetime.utcfromtimestamp(reminder['end']))
+                        em.set_author(name="Rappel ajouté (Copié)", icon_url=user.avatar_url)
                         try:
                             await user.send(embed=em)
                         except Exception as e:
