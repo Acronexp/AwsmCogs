@@ -135,28 +135,30 @@ class MiniGames(commands.Cog):
         Vous devez deviner si vous aurez plus ou moins en additionnant vos deux lancés.
         Si les scores sont identiques avec le bot, vous êtes remboursé.
 
-        Mise minimale de 5 crédits et maximale de 100"""
+        Mise minimale de 10 crédits et maximale de 200"""
         author = ctx.author
         cash = self.bot.get_cog("Cash")
         curr = await cash.get_currency(ctx.guild)
 
-        if 5 <= mise <= 100:
+        if 10 <= mise <= 200:
             if await cash.enough_balance(author, mise):
+
+                def affem(userval, botval, footer):
+                    em = discord.Embed(color=author.color)
+                    em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
+                    em.add_field(name="Vous", value=userval)
+                    em.add_field(name=self.bot.user.name, value=botval)
+                    em.set_footer(text=footer)
+                    return em
+
                 async with ctx.channel.typing():
                     user_dices = [random.randint(1, 6), random.randint(1, 6)]
                     bot_dices = [random.randint(1, 6), random.randint(1, 6)]
                     await asyncio.sleep(1.5)
 
-                    def affem(userval, botval, footer):
-                        em = discord.Embed(color=author.color)
-                        em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
-                        em.add_field(name="Vous", value=userval)
-                        em.add_field(name=self.bot.user.name, value=botval)
-                        em.set_footer(text=footer)
-                        return em
-
-                    before = affem(box(f"🎲 {min(user_dices)} "), box(f"🎲 {max(bot_dices)} "),
+                    before = affem(box(f"🎲 {user_dices[0]} "), box(f"🎲 {bot_dices[0]} "),
                                    "Allez-vous avoir plus ou moins que moi avec le prochain lancé ?")
+
                 msg = await ctx.send(embed=before)
                 emojis = ["➕", "➖"]
 
@@ -171,43 +173,45 @@ class MiniGames(commands.Cog):
                     emoji = react.emoji
 
                 if sum(user_dices) == sum(bot_dices):
-                    after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
-                                  box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                    after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
+                                  box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                   "Egalité ! Vous ne perdez pas votre mise")
                     return await msg.edit(embed=after)
 
                 if emoji == "➕":
                     if sum(user_dices) > sum(bot_dices):
+                        mise = round(mise/2)
                         await cash.deposit_credits(author, mise)
                         await cash.add_log(author, "Gain aux dés", mise)
-                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
-                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                        after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
+                                  box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Gagné ! Vous gagnez {mise} {curr}")
                         await msg.edit(embed=after)
                     else:
                         await cash.remove_credits(author, mise)
                         await cash.add_log(author, "Perte aux dés", -mise)
-                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
-                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                        after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
+                                  box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Perdu ! Vous avez perdu votre mise")
                         await msg.edit(embed=after)
                 else:
                     if sum(user_dices) < sum(bot_dices):
+                        mise = round(mise / 2)
                         await cash.deposit_credits(author, mise)
                         await cash.add_log(author, "Gain aux dés", mise)
-                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
-                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                        after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
+                                  box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Gagné ! Vous gagnez {mise} {curr}")
                         await msg.edit(embed=after)
                     else:
                         await cash.remove_credits(author, mise)
                         await cash.add_log(author, "Perte aux dés", -mise)
-                        after = affem(box(f"🎲 {min(user_dices)}, {max(user_dices)} "),
-                                      box(f"🎲 {max(bot_dices)}, {min(bot_dices)} "),
+                        after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
+                                  box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Perdu ! Vous avez perdu votre mise")
                         await msg.edit(embed=after)
             else:
                 await ctx.send("**Fonds insuffisants** • Vous n'avez pas cette somme sur votre compte")
         else:
-            await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 5 et 100 {curr}")
+            await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 10 et 200 {curr}")
 
