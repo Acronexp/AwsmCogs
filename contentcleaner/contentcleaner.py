@@ -80,6 +80,7 @@ class ContentCleaner(commands.Cog):
         if message.guild:
             guild = message.guild
             channel = message.channel
+            author = message.author
             params = await self.config.guild(guild).all()
             if params["vocaroo"]:
                 urls = re.compile(r'(https?://(?:vocaroo\.com|voca\.ro)/\S*)', re.DOTALL | re.IGNORECASE).findall(message.content)
@@ -106,5 +107,5 @@ class ContentCleaner(commands.Cog):
                             except:
                                 pass
                             else:
-                                await channel.send(self.shorten_link(url))
+                                await channel.send(f"De **{author}** : " + self.shorten_link(url))
 
