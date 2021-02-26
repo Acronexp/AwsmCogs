@@ -91,7 +91,7 @@ class ContentCleaner(commands.Cog):
                             file = self.get_vocaroo_mp3(url)
                             paths.append(file)
                             f = discord.File(file)
-                            await message.reply(file=f)
+                            await message.reply(file=f, mention_author=False)
 
                         for p in paths:
                             os.remove(p)
