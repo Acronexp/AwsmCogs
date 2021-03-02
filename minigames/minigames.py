@@ -135,11 +135,11 @@ class MiniGames(commands.Cog):
 
         Mise minimale de 10 crédits et maximale de 200"""
         author = ctx.author
-        cash = self.bot.get_cog("Cash")
-        curr = await cash.get_currency(ctx.guild)
+        finance = self.bot.get_cog("Finance")
+        curr = await finance.get_currency(ctx.guild)
 
         if 10 <= mise <= 200:
-            if await cash.enough_credits(author, mise):
+            if await finance.enough_credits(author, mise):
 
                 def affem(userval, botval, footer):
                     em = discord.Embed(color=author.color)
@@ -179,13 +179,13 @@ class MiniGames(commands.Cog):
                 if emoji == "➕":
                     if sum(user_dices) > sum(bot_dices):
                         mise = round(mise/2)
-                        await cash.deposit_credits(author, mise, reason="Gain aux dés")
+                        await finance.deposit_credits(author, mise, reason="Gain aux dés")
                         after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
                                   box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Gagné ! Vous gagnez {mise} {curr}")
                         await msg.edit(embed=after)
                     else:
-                        await cash.remove_credits(author, mise, reason="Perte aux dés")
+                        await finance.remove_credits(author, mise, reason="Perte aux dés")
                         after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
                                   box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Perdu ! Vous avez perdu votre mise")
@@ -193,13 +193,13 @@ class MiniGames(commands.Cog):
                 else:
                     if sum(user_dices) < sum(bot_dices):
                         mise = round(mise / 2)
-                        await cash.deposit_credits(author, mise, reason="Gain aux dés")
+                        await finance.deposit_credits(author, mise, reason="Gain aux dés")
                         after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
                                   box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Gagné ! Vous gagnez {mise} {curr}")
                         await msg.edit(embed=after)
                     else:
-                        await cash.remove_credits(author, mise, reason="Perte aux dés")
+                        await finance.remove_credits(author, mise, reason="Perte aux dés")
                         after = affem(box(f"🎲 {user_dices[0]}, {user_dices[1]} "),
                                   box(f"🎲 {bot_dices[0]}, {bot_dices[1]} "),
                                       f"Perdu ! Vous avez perdu votre mise")
