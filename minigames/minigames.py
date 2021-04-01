@@ -74,7 +74,7 @@ class MiniGames(commands.Cog):
                           "{a[1]}|{b[1]}|{c[1]} <= \n" \
                           "{a[2]}|{b[2]}|{c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
 
-                    if random.randint(1, 3):
+                    if random.randint(1, 3) == 1:
                         aff ="🐟|🐟|🐟\n" \
                              "🐟|🐟|🐟\n" \
                              "🐟|🐟|🐟"
