@@ -76,7 +76,7 @@ class MiniGames(commands.Cog):
 
                     if random.randint(1, 3) == 1:
                         aff ="🐟|🐟|🐟\n" \
-                             "🐟|🐟|🐟\n" \
+                             "🐟|🐟|🐟\n <= " \
                              "🐟|🐟|🐟"
 
                     count = lambda e: mid.count(e)
