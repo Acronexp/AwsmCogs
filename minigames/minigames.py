@@ -74,11 +74,6 @@ class MiniGames(commands.Cog):
                           "{a[1]}|{b[1]}|{c[1]} <= \n" \
                           "{a[2]}|{b[2]}|{c[2]}".format(a=cols[0], b=cols[1], c=cols[2])
 
-                    if random.randint(1, 3) == 1:
-                        aff ="🐟|🐟|🐟\n" \
-                             "🐟|🐟|🐟\n <= " \
-                             "🐟|🐟|🐟"
-
                     count = lambda e: mid.count(e)
 
                     def fruitcount():
@@ -113,7 +108,7 @@ class MiniGames(commands.Cog):
                     else:
                         txt = "Rien · Vous perdez votre mise"
 
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(1)
 
                     ope = delta - mise
                     if ope > 0:
@@ -122,7 +117,112 @@ class MiniGames(commands.Cog):
                         await finance.remove_credits(author, mise, reason="Perte à la Machine à sous")
 
                 em = discord.Embed(description=f"**Mise :** {mise} {curr}\n" + box(aff), color=author.color)
-                em.set_author(name="🎰 " + str(author), icon_url=author.avatar_url)
+                em.set_author(name="🎰 · " + str(author), icon_url=author.avatar_url)
+                em.set_footer(text=txt.format(f"{delta} {curr}"))
+                await ctx.send(embed=em)
+            else:
+                await ctx.send("**Fonds insuffisants** • Vous n'avez pas cette somme sur votre compte")
+        else:
+            await ctx.send(f"**Mise invalide** • Elle doit être comprise entre 5 et 100 {curr}")
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.cooldown(1, 5, commands.BucketType.member)
+    async def bigslot(self, ctx, mise: int = None):
+        """Jouer à la machine à sous XL
+
+        Mise minimale de 100 crédits et maximale de 1000"""
+        author = ctx.author
+        finance = self.bot.get_cog("Finance")
+        curr = await finance.get_currency(ctx.guild)
+
+        if not mise:
+            tbl = [("🍒", "x3", "Mise + 1000"),
+                   ("🍒", "x4", "Mise x5"),
+                   ("🍒", "x5", "Mise x10"),
+                   ("🍀", "x3", "Mise + 5000"),
+                   ("🍀", "x4", "Mise x10"),
+                   ("🍀", "x5", "Mise x20"),
+                   ("💎", "x4", "Mise x25"),
+                   ("💎", "x5", "Mise x50"),
+                   ("⚡", "<5", "Mise perdue"),
+                   ("⚡", "x5", "Mise x100")]
+            em = discord.Embed(title="Combinaisons possibles",
+                               description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
+                               color=await ctx.embed_color())
+            em.set_footer(text=f"🍒 = Même fruit · La mise doit être comprise entre 10 et 1000 {curr}")
+            return await ctx.send(embed=em)
+
+        if 5 <= mise <= 100:
+            if await finance.enough_credits(author, mise):
+                async with ctx.channel.typing():
+                    delta = 0
+
+                    col = ["🍎", "🍊", "🍋", "🍒", "🍉", "⚡", "💎", "🍀"]
+                    fruits = ["🍎", "🍊", "🍋", "🍒", "🍉"]
+                    col = col[-3:] + col + col[:3]
+                    cols = []
+                    mid = []
+                    for i in range(5):
+                        n = random.randint(3, 10)
+                        cols.append((col[n - 1], col[n], col[n + 1]))
+                        mid.append(col[n])
+
+                    aff = "{a[0]}|{b[0]}|{c[0]}|{d[0]}|{e[0]}\n" \
+                          "{a[1]}|{b[1]}|{c[1]}|{d[1]}|{e[1]} <= \n" \
+                          "{a[2]}|{b[2]}|{c[2]}|{d[2]}|{e[2]}".format(a=cols[0], b=cols[1], c=cols[2],
+                                                                      d=cols[3], e=cols[4])
+
+                    count = lambda e: mid.count(e)
+
+                    def fruitcount():
+                        for f in fruits:
+                            if count(f) >= 3:
+                                return count(f)
+                        return 0
+
+                    if count("⚡") == 5:
+                        delta = mise * 100
+                        txt = "5x ⚡ · Vous gagnez {}"
+                    elif count("⚡") in (1, 2, 3, 4):
+                        txt = "Zap ⚡ · Vous perdez votre mise"
+                    elif count("💎") == 5:
+                        delta = mise * 50
+                        txt = "5x 💎 · Vous gagnez {}"
+                    elif count("💎") == 4:
+                        delta = mise * 25
+                        txt = "4x 💎 · Vous gagnez {}"
+                    elif count("🍀") == 5:
+                        delta = mise * 20
+                        txt = "5x 🍀 · Vous gagnez {}"
+                    elif count("🍀") == 4:
+                        delta = mise * 10
+                        txt = "4x 🍀 · Vous gagnez {}"
+                    elif count("🍀") == 3:
+                        delta = mise + 5000
+                        txt = "3x 🍀 · Vous gagnez {}"
+                    elif fruitcount() == 5:
+                        delta = mise * 10
+                        txt = "5x fruit · Vous gagnez {}"
+                    elif fruitcount() == 4:
+                        delta = mise * 5
+                        txt = "4x fruit · Vous gagnez {}"
+                    elif fruitcount() == 3:
+                        delta = mise + 1000
+                        txt = "3x fruit · Vous gagnez {}"
+                    else:
+                        txt = "Rien · Vous perdez votre mise"
+
+                    await asyncio.sleep(1)
+
+                    ope = delta - mise
+                    if ope > 0:
+                        await finance.deposit_credits(author, ope, reason="Gain à la Machine à sous")
+                    elif ope < 0:
+                        await finance.remove_credits(author, mise, reason="Perte à la Machine à sous")
+
+                em = discord.Embed(description=f"**Mise :** {mise} {curr}\n" + box(aff), color=author.color)
+                em.set_author(name="🎰 XL · " + str(author), icon_url=author.avatar_url)
                 em.set_footer(text=txt.format(f"{delta} {curr}"))
                 await ctx.send(embed=em)
             else:
@@ -149,7 +249,7 @@ class MiniGames(commands.Cog):
 
                 def affem(userval, botval, footer):
                     em = discord.Embed(color=author.color)
-                    em.set_author(name="🎲 " + str(author), icon_url=author.avatar_url)
+                    em.set_author(name="🎲 · " + str(author), icon_url=author.avatar_url)
                     em.add_field(name="Vous", value=userval)
                     em.add_field(name=self.bot.user.name, value=botval)
                     em.set_footer(text=footer)
