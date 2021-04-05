@@ -150,7 +150,7 @@ class MiniGames(commands.Cog):
             em = discord.Embed(title="Combinaisons possibles",
                                description=box(tabulate(tbl, headers=("Emoji", "Nb.", "Gain"))),
                                color=await ctx.embed_color())
-            em.set_footer(text=f"🍒 = Même fruit · La mise doit être comprise entre 10 et 1000 {curr}")
+            em.set_footer(text=f"🍒 = Même fruit · La mise doit être comprise entre 100 et 1000 {curr}")
             return await ctx.send(embed=em)
 
         if 100 <= mise <= 1000:
