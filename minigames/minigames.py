@@ -127,7 +127,7 @@ class MiniGames(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.cooldown(1, 5, commands.BucketType.member)
+    @commands.cooldown(1, 20, commands.BucketType.member)
     async def bigslot(self, ctx, mise: int = None):
         """Jouer à la machine à sous XL
 
@@ -153,7 +153,7 @@ class MiniGames(commands.Cog):
             em.set_footer(text=f"🍒 = Même fruit · La mise doit être comprise entre 10 et 1000 {curr}")
             return await ctx.send(embed=em)
 
-        if 5 <= mise <= 100:
+        if 100 <= mise <= 1000:
             if await finance.enough_credits(author, mise):
                 async with ctx.channel.typing():
                     delta = 0
