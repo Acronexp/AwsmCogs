@@ -15,12 +15,12 @@ class BetError(Exception):
     """Erreurs liées au module Bet"""
 
 
-class FinanceNotLoaded(BetError):
-    """Soulevée lorsque le module Finance n'est pas chargé"""
+class AltEcoNotLoaded(BetError):
+    """Soulevée lorsque le module Eco n'est pas chargé"""
 
 
 class Bet(commands.Cog):
-    """Système de paris exploitant l'économie du module Finance"""
+    """Système de paris exploitant l'économie du module AltEco"""
 
     def __init__(self, bot):
         super().__init__()
@@ -33,9 +33,9 @@ class Bet(commands.Cog):
         self.bets = {}
 
         try:
-            self.bot.get_cog("Finance")
+            self.bot.get_cog("AltEco")
         except errors.CogLoadError:
-            raise FinanceNotLoaded("Le module Finance est nécessaire au fonctionnement de ce module Bet")
+            raise AltEcoNotLoaded("Le module AltEco est nécessaire au fonctionnement de ce module Bet")
 
     async def gen_new_bet(self, channel: discord.TextChannel, a: str, b: str, votes_exp: int, title: str):
         """Génère un nouveau pari sur le salon écrit donné"""
@@ -119,9 +119,9 @@ class Bet(commands.Cog):
 
         Le délai par défaut d'arrêt des votes si celui-ci n'est pas précisé est de 5m"""
         channel = ctx.channel
-        finance = self.bot.get_cog("Finance")
+        eco = self.bot.get_cog("AltEco")
         if not await self.get_bet(channel):
-            tdelta = await finance.utils_parse_timedelta(votes)
+            tdelta = await eco.utils_parse_timedelta(votes)
             if len(title) > 1 and len(choix_1) > 0 and len(choix_2) > 0 and tdelta:
                 timestamp = (datetime.now() + tdelta).timestamp()
                 try:
@@ -172,8 +172,8 @@ class Bet(commands.Cog):
         choix = choix.upper()
         data = await self.get_bet(channel)
         if data:
-            finance = self.bot.get_cog("Finance")
-            curr = await finance.get_currency(ctx.guild)
+            eco = self.bot.get_cog("AltEco")
+            curr = await eco.get_currency(ctx.guild)
             if choix in ("1", "A", "2", "B"):
                 choix = "A" if choix in ["A", "1"] else "B"
                 if not data["votes_open"]:
@@ -195,7 +195,7 @@ class Bet(commands.Cog):
                         user = ctx.guild.get_member(v)
                         if user:
                             retour = int(votes[v] * rdm)
-                            solde = await finance.deposit_credits(user, retour, reason="Pari remporté")
+                            solde = await eco.deposit_credits(user, retour, reason="Pari remporté")
                             try:
                                 em = discord.Embed(title="🎲 **Pari remporté**", description=f"Vous repartez avec **{retour}** {curr}")
                                 em.set_footer(text=f"Vous avez désormais {solde} {curr}")
@@ -223,16 +223,16 @@ class Bet(commands.Cog):
         channel = ctx.channel
         data = await self.get_bet(channel)
         if data:
-            finance = self.bot.get_cog("Finance")
-            curr = await finance.get_currency(ctx.guild)
+            eco = self.bot.get_cog("AltEco")
+            curr = await eco.get_currency(ctx.guild)
             if choix in ("1", "A", "2", "B"):
                 choix = "A" if choix in ["A", "1"] else "B"
                 if data["votes_open"]:
                     all_votes = [i for i in data["a"]["votes"]] + [i for i in data["b"]["votes"]]
                     if ctx.author.id not in all_votes:
-                        if await finance.enough_credits(ctx.author, somme):
+                        if await eco.check_balance(ctx.author, somme):
                             try:
-                                await finance.remove_credits(ctx.author, somme, reason="Participation à un pari")
+                                await eco.withdraw_credits(ctx.author, somme, reason="Participation à un pari")
                             except:
                                 return await ctx.send(f"{ctx.author.mention} **Erreur** • La transaction a échouée")
                             data[choix.lower()]["votes"][ctx.author.id] = somme
@@ -246,9 +246,9 @@ class Bet(commands.Cog):
                             await ctx.send(f"{ctx.author.mention} **Impossible** • Fonds insuffisants dans votre compte")
                     else:
                         if ctx.author.id in [i for i in data[choix.lower()]["votes"]]:
-                            if await finance.enough_credits(ctx.author, somme):
+                            if await eco.check_balance(ctx.author, somme):
                                 try:
-                                    await finance.remove_credits(ctx.author, somme, reason="Ajout de fonds à un pari")
+                                    await eco.withdraw_credits(ctx.author, somme, reason="Ajout de fonds à un pari")
                                 except:
                                     return await ctx.send(f"{ctx.author.mention} **Erreur** • La transaction a échouée")
                                 before = data[choix.lower()]["votes"][ctx.author.id]
